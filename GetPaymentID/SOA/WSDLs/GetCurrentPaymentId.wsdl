@@ -1,0 +1,34 @@
+<?xml version= '1.0' encoding= 'UTF-8' ?>
+<wsdl:definitions
+     name="GetCurrentPaymentId"
+     targetNamespace="http://xmlns.oracle.com/PaymentEnablement_SOA/GetPaymentID/GetCurrentPaymentId"
+     xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+     xmlns:client="http://xmlns.oracle.com/PaymentEnablement_SOA/GetPaymentID/GetCurrentPaymentId"
+     xmlns:ns1="http://www.grigottbank.paymentid.org"
+     xmlns:plnk="http://docs.oasis-open.org/wsbpel/2.0/plnktype"
+    >
+    <plnk:partnerLinkType name="GetCurrentPaymentId">
+        <plnk:role name="GetCurrentPaymentIdProvider" portType="client:GetCurrentPaymentId"/>
+    </plnk:partnerLinkType>
+    <wsdl:types>
+        <schema xmlns="http://www.w3.org/2001/XMLSchema">
+            <import namespace="http://www.grigottbank.paymentid.org" schemaLocation="../Schemas/GetPaymentId.xsd"/>
+        </schema>
+    </wsdl:types>
+    <wsdl:message name="GetCurrentPaymentIdRequestMessage">
+        <wsdl:part name="payload" element="ns1:paymentIdRequest"/>
+    </wsdl:message>
+    <wsdl:message name="GetCurrentPaymentIdResponseMessage">
+        <wsdl:part name="payload" element="ns1:paymentIdResponse"/>
+    </wsdl:message>
+    <wsdl:message name="GetPaymentIdFaultMessage">
+        <wsdl:part name="payload" element="ns1:FaultResponse"/>
+    </wsdl:message>
+    <wsdl:portType name="GetCurrentPaymentId">
+        <wsdl:operation name="process">
+            <wsdl:input message="client:GetCurrentPaymentIdRequestMessage"/>
+            <wsdl:output message="client:GetCurrentPaymentIdResponseMessage"/>
+            <wsdl:fault name="GetPaymentIdFault" message="client:GetPaymentIdFaultMessage"/>
+        </wsdl:operation>
+    </wsdl:portType>
+</wsdl:definitions>

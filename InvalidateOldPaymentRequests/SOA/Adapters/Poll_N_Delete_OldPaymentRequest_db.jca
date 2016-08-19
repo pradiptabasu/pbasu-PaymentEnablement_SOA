@@ -1,0 +1,21 @@
+<adapter-config name="Poll_N_Delete_OldPaymentRequest" adapter="db" wsdlLocation="../WSDLs/Poll_N_Delete_OldPaymentRequest.wsdl" xmlns="http://platform.integration.oracle/blocks/adapter/fw/metadata">
+  
+  <connection-factory UIConnectionName="PaymentsEnablement_ISA-grigottbank" location="eis/DB/PaymentsEnablement_ISA-grigottbank"/>
+  <endpoint-activation portType="Poll_N_Delete_OldPaymentRequest_ptt" operation="receive">
+    <activation-spec className="oracle.tip.adapter.db.DBActivationSpec">
+      <property name="DescriptorName" value="Poll_N_Delete_OldPaymentRequest.PaymentReqTrans"/>
+      <property name="QueryName" value="Poll_N_Delete_OldPaymentRequestSelect"/>
+      <property name="MappingsMetaDataURL" value="Poll_N_Delete_OldPaymentRequest-or-mappings.xml"/>
+      <property name="PollingStrategy" value="LogicalDeletePollingStrategy"/>
+      <property name="PollingInterval" value="300"/>
+      <property name="MaxRaiseSize" value="1"/>
+      <property name="MaxTransactionSize" value="10"/>
+      <property name="NumberOfThreads" value="1"/>
+      <property name="ReturnSingleResultSet" value="false"/>
+      <property name="MarkReadColumn" value="SOALOGICALDEL"/>
+      <property name="MarkReadValue" value="READ"/>
+      <property name="MarkUnreadValue" value="UNREAD"/>
+    </activation-spec>
+  </endpoint-activation>
+
+</adapter-config>

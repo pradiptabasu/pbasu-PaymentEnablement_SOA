@@ -1,0 +1,158 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<!--
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  Oracle JDeveloper BPEL Designer 
+  
+  Created: Mon Apr 25 16:08:25 IST 2016
+  Author:  prabasu
+  Type: BPEL 2.0 Process
+  Purpose: One Way BPEL Process
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+-->
+<process name="BankAsyncPaymentProcessSimulator"
+               targetNamespace="http://xmlns.oracle.com/PaymentEnablement_SOA/PaymentBookingProcess/BankAsyncPaymentProcessSimulator"
+               xmlns="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
+               xmlns:client="http://xmlns.oracle.com/PaymentEnablement_SOA/PaymentBookingProcess/BankAsyncPaymentProcessSimulator"
+               xmlns:ora="http://schemas.oracle.com/xpath/extension"
+               xmlns:ui="http://xmlns.oracle.com/soa/designer"
+               xmlns:bpel="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
+         xmlns:bpelx="http://schemas.oracle.com/bpel/extension" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+         xmlns:xp20="http://www.oracle.com/XSL/Transform/java/oracle.tip.pc.services.functions.Xpath20"
+         xmlns:bpws="http://schemas.xmlsoap.org/ws/2003/03/business-process/"
+         xmlns:oraext="http://www.oracle.com/XSL/Transform/java/oracle.tip.pc.services.functions.ExtFunc"
+         xmlns:dvm="http://www.oracle.com/XSL/Transform/java/oracle.tip.dvm.LookupValue"
+         xmlns:hwf="http://xmlns.oracle.com/bpel/workflow/xpath"
+         xmlns:ids="http://xmlns.oracle.com/bpel/services/IdentityService/xpath"
+         xmlns:bpm="http://xmlns.oracle.com/bpmn20/extensions" xmlns:ess="http://xmlns.oracle.com/scheduler"
+         xmlns:xdk="http://schemas.oracle.com/bpel/extension/xpath/function/xdk"
+         xmlns:xref="http://www.oracle.com/XSL/Transform/java/oracle.tip.xref.xpath.XRefXPathFunctions"
+         xmlns:ldap="http://schemas.oracle.com/xpath/extension/ldap"
+         xmlns:ns1="http://www.demo.oracle.gringottBank.org">
+
+  <import ui:processWSDL="true" namespace="http://xmlns.oracle.com/PaymentEnablement_SOA/PaymentBookingProcess/BankAsyncPaymentProcessSimulator"
+          location="../WSDLs/BankAsyncPaymentProcessSimulator.wsdl" importType="http://schemas.xmlsoap.org/wsdl/"/>
+  <!-- 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      PARTNERLINKS                                                      
+      List of services participating in this BPEL process               
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  --> 
+  <partnerLinks>
+    <!-- 
+      The 'client' role represents the requester of this service. It is 
+      used for callback. The location and correlation information associated
+      with the client role are automatically set using WS-Addressing.
+    -->
+    <partnerLink name="bankasyncpaymentprocesssimulator_client" partnerLinkType="client:BankAsyncPaymentProcessSimulator" myRole="BankAsyncPaymentProcessSimulatorProvider"/>
+  </partnerLinks>
+
+  <!-- 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      VARIABLES                                                        
+      List of messages and XML documents used within this BPEL process 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  -->
+  <variables>
+    <!-- Reference to the message passed as input during initiation -->
+    <variable name="inputVariable" messageType="client:BankAsyncPaymentProcessSimulatorRequestMessage"/>
+    <variable name="PaymentProcessingStatus" type="xsd:string"/>
+    <variable name="waitTime" type="xsd:int"/>
+    <variable name="title" type="xsd:string"/>
+  </variables>
+
+  <!-- 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+     ORCHESTRATION LOGIC                                               
+     Set of activities coordinating the flow of messages across the    
+     services integrated within this business process                  
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  -->
+  <sequence name="main">
+
+    <!-- Receive input from requestor. (Note: This maps to operation defined in BankAsyncPaymentProcessSimulator.wsdl) -->
+    <receive name="receiveInput" partnerLink="bankasyncpaymentprocesssimulator_client" portType="client:BankAsyncPaymentProcessSimulator" operation="process" variable="inputVariable" createInstance="yes"/>
+    <assign name="assignTitle">
+      <copy>
+        <from>$inputVariable.payload/ns1:FintechPaymentRequestId</from>
+        <to>$title</to>
+      </copy>
+    </assign>
+    <extensionActivity>
+      <bpelx:exec name="setCompositeInstanceTitle" language="java">
+        <![CDATA[String instanceTitle   = (String)getVariableData("title");    
+setTitle(instanceTitle);           
+setCompositeInstanceTitle(instanceTitle); 
+setFlowInstanceTitle(instanceTitle);]]>
+      </bpelx:exec>
+    </extensionActivity>
+    <assign name="fetchWaitTime">
+      <copy>
+        <from>concat('PT',ora:getPreference("waitTimeforSimulatorINseconds"),'S')</from>
+        <to>$waitTime</to>
+      </copy>
+    </assign>
+    <wait name="WaitForPaymentRouted">
+      <for>$waitTime</for>
+    </wait>
+    <assign name="PaymentRouted">
+      <copy>
+        <from>'Payment Routed'</from>
+        <to>$PaymentProcessingStatus</to>
+      </copy>
+    </assign>
+    <wait name="WaitForPaymentRated">
+      <for>$waitTime</for>
+    </wait>
+    <assign name="PaymentRated">
+      <copy>
+        <from>'Payment Rated'</from>
+        <to>$PaymentProcessingStatus</to>
+      </copy>
+    </assign>
+    <wait name="WaitForRevenueRecognized">
+      <for>$waitTime</for>
+    </wait>
+    <assign name="RevenueRecognized">
+      <copy>
+        <from>'Revenue Recognized'</from>
+        <to>$PaymentProcessingStatus</to>
+      </copy>
+    </assign>
+    <wait name="WaitForPaymentPackaged">
+      <for>$waitTime</for>
+    </wait>
+    <assign name="PaymentPackaged">
+      <copy>
+        <from>'Payment Packaged'</from>
+        <to>$PaymentProcessingStatus</to>
+      </copy>
+    </assign>
+    <wait name="WaitForPaymentOfferedGW">
+      <for>$waitTime</for>
+    </wait>
+    <assign name="PaymentOfferedGW">
+      <copy>
+        <from>'Payment Offered to GW'</from>
+        <to>$PaymentProcessingStatus</to>
+      </copy>
+    </assign>
+    <wait name="WaitForPaymentAcceptedGW">
+      <for>$waitTime</for>
+    </wait>
+    <assign name="PaymentAcceptedGW">
+      <copy>
+        <from>'Payment Accepted by GW'</from>
+        <to>$PaymentProcessingStatus</to>
+      </copy>
+    </assign>
+    <wait name="WaitForPaymentConfirmed">
+      <for>$waitTime</for>
+    </wait>
+    <assign name="PaymentConfirmed">
+      <copy>
+        <from>'Payment Confirmed'</from>
+        <to>$PaymentProcessingStatus</to>
+      </copy>
+    </assign>
+  </sequence>
+</process>

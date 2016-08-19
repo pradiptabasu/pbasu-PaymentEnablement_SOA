@@ -1,0 +1,101 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<!--
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  Oracle JDeveloper BPEL Designer 
+  
+  Created: Mon May 16 16:35:16 IST 2016
+  Author:  prabasu
+  Type: BPEL 2.0 Process
+  Purpose: Synchronous BPEL Process
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+-->
+<process name="GetCurrentPaymentId"
+               targetNamespace="http://xmlns.oracle.com/PaymentEnablement_SOA/GetPaymentID/GetCurrentPaymentId"
+               xmlns="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
+               xmlns:client="http://xmlns.oracle.com/PaymentEnablement_SOA/GetPaymentID/GetCurrentPaymentId"
+               xmlns:ora="http://schemas.oracle.com/xpath/extension"
+               xmlns:ui="http://xmlns.oracle.com/soa/designer"
+               xmlns:bpelx="http://schemas.oracle.com/bpel/extension"
+         xmlns:bpel="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
+         xmlns:ns1="http://xmlns.oracle.com/pcbpel/adapter/db/PaymentEnablement_SOA/GetPaymentID/FetchCurrentPaymentId"
+         xmlns:ns2="http://xmlns.oracle.com/pcbpel/adapter/db/FetchCurrentPaymentId"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ns3="http://www.grigottbank.paymentid.org"
+         xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+    <import ui:processWSDL="true" namespace="http://xmlns.oracle.com/PaymentEnablement_SOA/GetPaymentID/GetCurrentPaymentId" location="../WSDLs/GetCurrentPaymentId.wsdl" importType="http://schemas.xmlsoap.org/wsdl/"/>
+    <!-- 
+      ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        PARTNERLINKS                                                      
+        List of services participating in this BPEL process               
+      ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    --> 
+  <partnerLinks>
+    <!-- 
+      The 'client' role represents the requester of this service. It is 
+      used for callback. The location and correlation information associated
+      with the client role are automatically set using WS-Addressing.
+    -->
+    <partnerLink name="getcurrentpaymentid_client" partnerLinkType="client:GetCurrentPaymentId" myRole="GetCurrentPaymentIdProvider"/>
+    <partnerLink name="FetchCurrentPaymentId" partnerLinkType="ns1:FetchCurrentPaymentId_plt"
+                 partnerRole="FetchCurrentPaymentId_role"/>
+  </partnerLinks>
+
+  <!-- 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      VARIABLES                                                        
+      List of messages and XML documents used within this BPEL process 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  -->
+  <variables>
+    <!-- Reference to the message passed as input during initiation -->
+    <variable name="inputVariable" messageType="client:GetCurrentPaymentIdRequestMessage"/>
+
+    <!-- Reference to the message that will be returned to the requester-->
+    <variable name="outputVariable" messageType="client:GetCurrentPaymentIdResponseMessage"/>
+    <variable name="FetchCurrentPaymentId_InputVariable" messageType="ns1:FetchCurrentPaymentIdInput_msg"/>
+    <variable name="FetchCurrentPaymentId_OutputVariable" messageType="ns1:FetchCurrentPaymentIdOutputCollection_msg"/>
+    <variable name="title" type="xsd:string"/>
+  </variables>
+
+  <!-- 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+     ORCHESTRATION LOGIC                                               
+     Set of activities coordinating the flow of messages across the    
+     services integrated within this business process                  
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  -->
+  <sequence name="main">
+
+    <!-- Receive input from requestor. (Note: This maps to operation defined in GetCurrentPaymentId.wsdl) -->
+    <receive name="receiveInput" partnerLink="getcurrentpaymentid_client" portType="client:GetCurrentPaymentId" operation="process" variable="inputVariable" createInstance="yes"/>
+    <invoke name="Invoke_FetchCurrentPaymentId" partnerLink="FetchCurrentPaymentId"
+            portType="ns1:FetchCurrentPaymentId_ptt" operation="FetchCurrentPaymentId" bpelx:invokeAsDetail="no"
+            inputVariable="FetchCurrentPaymentId_InputVariable" outputVariable="FetchCurrentPaymentId_OutputVariable"/>
+    <assign name="Assign_FetchCurrentPaymentId_Output">
+      <copy>
+        <from>$FetchCurrentPaymentId_OutputVariable.FetchCurrentPaymentIdOutputCollection/ns2:FetchCurrentPaymentIdOutput/ns2:PAYMENTID</from>
+        <to>$outputVariable.payload/ns3:paymentId</to>
+      </copy>
+      <copy>
+        <from>$FetchCurrentPaymentId_OutputVariable.FetchCurrentPaymentIdOutputCollection/ns2:FetchCurrentPaymentIdOutput/ns2:PAYMENTID</from>
+        <to>$title</to>
+      </copy>
+    </assign>
+    <extensionActivity>
+      <bpelx:exec name="setCompositeTitle" language="java">
+        <![CDATA[String instanceTitle   = (String)getVariableData("title");      
+        setTitle(instanceTitle);             
+        setCompositeInstanceTitle(instanceTitle);   
+        setFlowInstanceTitle(instanceTitle);]]>
+      </bpelx:exec>
+    </extensionActivity>
+    <!-- Generate reply to synchronous request -->
+    <reply name="replyOutput" partnerLink="getcurrentpaymentid_client" portType="client:GetCurrentPaymentId" operation="process" variable="outputVariable">
+      <bpelx:toProperties>
+        <bpelx:toProperty name="rest.binding.http.Access-Control-Allow-Origin">'*'</bpelx:toProperty>
+        <bpelx:toProperty name="rest.binding.Access-Control-Allow-Origin">'*'</bpelx:toProperty>
+        <bpelx:toProperty name="Access-Control-Allow-Origin">'*'</bpelx:toProperty>
+      </bpelx:toProperties>
+    </reply>
+  </sequence>
+</process>

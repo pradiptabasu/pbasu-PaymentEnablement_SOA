@@ -1,0 +1,10 @@
+{
+  "FintechPaymentRequestId" : 1,
+  "CustomerToken" : "0",
+  "RequiredFunds" : 30.73,
+  "finTechID" : "finTechID4",
+  "PaymentCategory" : "PaymentCategory5",
+  "SalesChannel" : "FinTech",
+  "TechnicalChannel" : "API",
+  "Region" : "Region6"
+}

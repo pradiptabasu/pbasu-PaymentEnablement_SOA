@@ -1,0 +1,52 @@
+<?xml version='1.0' encoding='windows-1252'?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://www.bank.org/payments" targetNamespace="http://www.bank.org/payments" elementFormDefault="qualified">
+   <xsd:element name="PaymentRequest">
+      <xsd:annotation>
+         <xsd:documentation>A sample element</xsd:documentation>
+      </xsd:annotation>
+      <xsd:complexType>
+         <xsd:sequence>
+            <xsd:element name="FintechPaymentRequestId" type="xsd:integer" maxOccurs="1"/>
+            <xsd:element name="CustomerToken" minOccurs="1" maxOccurs="1">
+               <xsd:simpleType>
+                  <xsd:restriction base="xsd:string">
+                     <xsd:pattern value="([0-9A-F])+"/>
+                  </xsd:restriction>
+               </xsd:simpleType>
+            </xsd:element>
+            <xsd:element name="RequiredFunds" maxOccurs="1" type="xsd:float"/>
+            <xsd:element name="finTechID" type="xsd:string"/>
+            <xsd:element name="PaymentCategory" type="xsd:string"/>
+            <xsd:element name="SalesChannel" type="xsd:string" default="FinTech" minOccurs="0"/>
+            <xsd:element name="TechnicalChannel" type="xsd:string" default="API" minOccurs="0"/>
+            <xsd:element name="Region" type="xsd:string"/>
+         </xsd:sequence>
+      </xsd:complexType>
+   </xsd:element>
+   <xsd:element name="paymentValidationResponse">
+      <xsd:annotation>
+         <xsd:documentation>A sample element</xsd:documentation>
+      </xsd:annotation>
+      <xsd:complexType>
+         <xsd:sequence>
+            <xsd:element name="FintechPaymentRequestId" type="xsd:int"/>
+            <xsd:element name="fundsAvailable" type="xsd:string"/>
+            <xsd:element name="creditAmount" type="xsd:float"/>
+            <xsd:element name="cashAmount" type="xsd:float"/>
+            <xsd:element name="paymentValidationStatus" type="xsd:string"/>
+         </xsd:sequence>
+      </xsd:complexType>
+   </xsd:element>
+   <xsd:element name="FaultResponse">
+      <xsd:annotation>
+         <xsd:documentation>A sample element</xsd:documentation>
+      </xsd:annotation>
+      <xsd:complexType>
+         <xsd:sequence>
+            <xsd:element name="code" type="xsd:string"/>
+            <xsd:element name="summary" type="xsd:string"/>
+            <xsd:element name="detail" type="xsd:string"/>
+         </xsd:sequence>
+      </xsd:complexType>
+   </xsd:element>
+</xsd:schema>

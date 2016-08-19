@@ -1,0 +1,212 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<!--
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  Oracle JDeveloper BPEL Designer 
+  
+  Created: Wed May 18 14:50:03 IST 2016
+  Author:  prabasu
+  Type: BPEL 2.0 Process
+  Purpose: Synchronous BPEL Process
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+-->
+<process name="CreditAvailabilityCheck"
+               targetNamespace="http://xmlns.oracle.com/PaymentEnablement_SOA/CreditAvailabilityService/CreditAvailabilityCheck"
+               xmlns="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
+               xmlns:client="http://xmlns.oracle.com/PaymentEnablement_SOA/CreditAvailabilityService/CreditAvailabilityCheck"
+               xmlns:ora="http://schemas.oracle.com/xpath/extension"
+               xmlns:ui="http://xmlns.oracle.com/soa/designer"
+               xmlns:bpelx="http://schemas.oracle.com/bpel/extension"
+         xmlns:bpel="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
+         xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ns1="http://www.bank.org/payments"
+         xmlns:xp20="http://www.oracle.com/XSL/Transform/java/oracle.tip.pc.services.functions.Xpath20"
+         xmlns:bpws="http://schemas.xmlsoap.org/ws/2003/03/business-process/"
+         xmlns:oraext="http://www.oracle.com/XSL/Transform/java/oracle.tip.pc.services.functions.ExtFunc"
+         xmlns:dvm="http://www.oracle.com/XSL/Transform/java/oracle.tip.dvm.LookupValue"
+         xmlns:hwf="http://xmlns.oracle.com/bpel/workflow/xpath"
+         xmlns:ids="http://xmlns.oracle.com/bpel/services/IdentityService/xpath"
+         xmlns:bpm="http://xmlns.oracle.com/bpmn20/extensions" xmlns:ess="http://xmlns.oracle.com/scheduler"
+         xmlns:xdk="http://schemas.oracle.com/bpel/extension/xpath/function/xdk"
+         xmlns:xref="http://www.oracle.com/XSL/Transform/java/oracle.tip.xref.xpath.XRefXPathFunctions"
+         xmlns:ldap="http://schemas.oracle.com/xpath/extension/ldap"
+         xmlns:ns2="http://xmlns.oracle.com/pcbpel/adapter/db/PaymentEnablement_SOA/CreditAvailabilityService/UpdatePaymentStatus"
+         xmlns:ns3="http://xmlns.oracle.com/pcbpel/adapter/db/top/UpdatePaymentStatus">
+
+    <import ui:processWSDL="true" namespace="http://xmlns.oracle.com/PaymentEnablement_SOA/CreditAvailabilityService/CreditAvailabilityCheck" location="../WSDLs/CreditAvailabilityCheck.wsdl" importType="http://schemas.xmlsoap.org/wsdl/"/>
+    <!-- 
+      ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        PARTNERLINKS                                                      
+        List of services participating in this BPEL process               
+      ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    --> 
+  <partnerLinks>
+    <!-- 
+      The 'client' role represents the requester of this service. It is 
+      used for callback. The location and correlation information associated
+      with the client role are automatically set using WS-Addressing.
+    -->
+    <partnerLink name="creditavailabilitycheck_client" partnerLinkType="client:CreditAvailabilityCheck" myRole="CreditAvailabilityCheckProvider"/>
+    <partnerLink name="UpdatePaymentStatus" partnerLinkType="ns2:UpdatePaymentStatus_plt"
+                 partnerRole="UpdatePaymentStatus_role"/>
+  </partnerLinks>
+
+  <!-- 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      VARIABLES                                                        
+      List of messages and XML documents used within this BPEL process 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  -->
+  <variables>
+    <!-- Reference to the message passed as input during initiation -->
+    <variable name="inputVariable" messageType="client:CreditAvailabilityCheckRequestMessage"/>
+
+    <!-- Reference to the message that will be returned to the requester-->
+    <variable name="outputVariable" messageType="client:CreditAvailabilityCheckResponseMessage"/>
+    <variable name="CreditAvailabilityFaultMessageVar" messageType="client:CreditAvailabilityFaultMessage"/>
+    <variable name="title" type="xsd:string"/>
+    <variable name="UpdateStatus_InputVariable" messageType="ns2:PaymentReqTransCollection_msg"/>
+  </variables>
+
+  <!-- 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+     ORCHESTRATION LOGIC                                               
+     Set of activities coordinating the flow of messages across the    
+     services integrated within this business process                  
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  -->
+  <sequence name="main">
+
+    <!-- Receive input from requestor. (Note: This maps to operation defined in CreditAvailabilityCheck.wsdl) -->
+    <receive name="receiveInput" partnerLink="creditavailabilitycheck_client" portType="client:CreditAvailabilityCheck" operation="process" variable="inputVariable" createInstance="yes"/>
+    <assign name="assignTitle">
+      <copy>
+        <from>$inputVariable.payload/ns1:FintechPaymentRequestId</from>
+        <to>$title</to>
+      </copy>
+    </assign>
+    <extensionActivity>
+      <bpelx:exec name="setCompositeInstanceTitle" language="java">
+        <![CDATA[String instanceTitle   = (String)getVariableData("title");     
+setTitle(instanceTitle);            
+setCompositeInstanceTitle(instanceTitle);  
+setFlowInstanceTitle(instanceTitle);]]>
+      </bpelx:exec>
+    </extensionActivity><if name="isCreditRequired">
+      <documentation>
+        <![CDATA[NoCreditRequired]]>
+      </documentation>
+      <condition>$inputVariable.payload/ns1:creditAmount &lt;= 0</condition>
+      <assign name="assignSameResponse">
+        <copy>
+          <from>$inputVariable.payload/ns1:FintechPaymentRequestId</from>
+          <to>$outputVariable.payload/ns1:FintechPaymentRequestId</to>
+        </copy>
+        <copy>
+          <from>$inputVariable.payload/ns1:fundsAvailable</from>
+          <to>$outputVariable.payload/ns1:fundsAvailable</to>
+        </copy>
+        <copy>
+          <from>$inputVariable.payload/ns1:creditAmount</from>
+          <to>$outputVariable.payload/ns1:creditAmount</to>
+        </copy>
+        <copy>
+          <from>$inputVariable.payload/ns1:cashAmount</from>
+          <to>$outputVariable.payload/ns1:cashAmount</to>
+        </copy>
+        <copy>
+          <from>$inputVariable.payload/ns1:paymentValidationStatus</from>
+          <to>$outputVariable.payload/ns1:paymentValidationStatus</to>
+        </copy>
+      </assign>
+      <else>
+        <documentation>
+          <![CDATA[CreditRequired]]>
+        </documentation>
+        <if name="isCreditLessThan70000">
+          <documentation>
+            <![CDATA[CreditLessThan70000]]>
+          </documentation>
+          <condition>$inputVariable.payload/ns1:creditAmount &lt; 70000</condition>
+          <sequence name="Sequence2">
+            <assign name="assignCreditAvailable">
+              <copy>
+                <from>$inputVariable.payload/ns1:FintechPaymentRequestId</from>
+                <to>$outputVariable.payload/ns1:FintechPaymentRequestId</to>
+              </copy>
+              <copy>
+                <from>$inputVariable.payload/ns1:FintechPaymentRequestId</from>
+                <to>$UpdateStatus_InputVariable.PaymentReqTransCollection/ns3:PaymentReqTrans/ns3:paymentid</to>
+              </copy>
+              <copy>
+                <from>'VALID'</from>
+                <to>$UpdateStatus_InputVariable.PaymentReqTransCollection/ns3:PaymentReqTrans/ns3:status</to>
+              </copy>
+              <copy>
+                <from>'Y'</from>
+                <to>$outputVariable.payload/ns1:fundsAvailable</to>
+              </copy>
+              <copy>
+                <from>$inputVariable.payload/ns1:cashAmount</from>
+                <to>$outputVariable.payload/ns1:cashAmount</to>
+              </copy>
+              <copy>
+                <from>$inputVariable.payload/ns1:creditAmount</from>
+                <to>$outputVariable.payload/ns1:creditAmount</to>
+              </copy>
+              <copy>
+                <from>'Approved based on Customer Asset and Credit'</from>
+                <to>$outputVariable.payload/ns1:paymentValidationStatus</to>
+              </copy>
+            </assign>
+            <invoke name="Invoke_UpdateStatusValid" bpelx:invokeAsDetail="no" partnerLink="UpdatePaymentStatus"
+                    portType="ns2:UpdatePaymentStatus_ptt" operation="update"
+                    inputVariable="UpdateStatus_InputVariable"/>
+          </sequence>
+          <else>
+            <documentation>
+              <![CDATA[CreditNOTLessThan70000]]>
+            </documentation>
+            <sequence name="Sequence1">
+              <assign name="assignFaultMessage">
+                <copy>
+                  <from>concat('PaymentRequest #',$inputVariable.payload/ns1:FintechPaymentRequestId,' breached Credit Limit')</from>
+                  <to>$CreditAvailabilityFaultMessageVar.CreditAvailabilityFault/ns1:detail</to>
+                </copy>
+                <copy>
+                  <from>$inputVariable.payload/ns1:FintechPaymentRequestId</from>
+                  <to>$UpdateStatus_InputVariable.PaymentReqTransCollection/ns3:PaymentReqTrans/ns3:paymentid</to>
+                </copy>
+                <copy>
+                  <from>'INVALID'</from>
+                  <to>$UpdateStatus_InputVariable.PaymentReqTransCollection/ns3:PaymentReqTrans/ns3:status</to>
+                </copy>
+                <copy>
+                  <from>concat('PaymentRequest #',$inputVariable.payload/ns1:FintechPaymentRequestId,' breached Credit Limit')</from>
+                  <to>$CreditAvailabilityFaultMessageVar.CreditAvailabilityFault/ns1:summary</to>
+                </copy>
+                <copy>
+                  <from>'400'</from>
+                  <to>$CreditAvailabilityFaultMessageVar.CreditAvailabilityFault/ns1:code</to>
+                </copy>
+              </assign>
+              <invoke name="Invoke_UpdateStatusInvalid" bpelx:invokeAsDetail="no" partnerLink="UpdatePaymentStatus"
+                      portType="ns2:UpdatePaymentStatus_ptt" operation="update"
+                      inputVariable="UpdateStatus_InputVariable"/>
+              <throw name="Throw_LimitBreached" faultName="client:CreditNotAvailable"
+                     faultVariable="CreditAvailabilityFaultMessageVar"/>
+            </sequence>
+          </else>
+        </if>
+      </else>
+    </if>
+    <!-- Generate reply to synchronous request -->
+    <reply name="replyOutput" partnerLink="creditavailabilitycheck_client" portType="client:CreditAvailabilityCheck" operation="process" variable="outputVariable"
+           bpelx:inputHeaderVariable="UpdateStatus_InputVariable">
+      <bpelx:toProperties>
+        <bpelx:toProperty name="rest.binding.http.Access-Control-Allow-Origin">'*'</bpelx:toProperty>
+        <bpelx:toProperty name="rest.binding.http.Access-Control-Allow-Credentials">'false'</bpelx:toProperty>
+        <bpelx:toProperty name="rest.binding.http.Access-Control-Allow-Methods">'GET, POST, OPTIONS'</bpelx:toProperty>
+        <bpelx:toProperty name="rest.binding.http.Access-Control-Allow-Headers">'Content-Type'</bpelx:toProperty>
+      </bpelx:toProperties>
+    </reply>
+  </sequence>
+</process>

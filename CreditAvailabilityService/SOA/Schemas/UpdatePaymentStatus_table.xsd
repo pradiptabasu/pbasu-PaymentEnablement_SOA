@@ -1,0 +1,20 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<xs:schema targetNamespace="http://xmlns.oracle.com/pcbpel/adapter/db/top/UpdatePaymentStatus" xmlns="http://xmlns.oracle.com/pcbpel/adapter/db/top/UpdatePaymentStatus" elementFormDefault="qualified" attributeFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+   <xs:element name="PaymentReqTransCollection" type="PaymentReqTransCollection"/>
+   <xs:complexType name="PaymentReqTransCollection">
+      <xs:sequence>
+         <xs:element name="PaymentReqTrans" type="PaymentReqTrans" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+   </xs:complexType>
+   <xs:complexType name="PaymentReqTrans">
+      <xs:sequence>
+         <xs:element name="paymentid" type="xs:long"/>
+         <xs:element name="status" type="string20" minOccurs="0"/>
+      </xs:sequence>
+   </xs:complexType>
+   <xs:simpleType name="string20">
+      <xs:restriction base="xs:string">
+         <xs:maxLength value="20"/>
+      </xs:restriction>
+   </xs:simpleType>
+</xs:schema>

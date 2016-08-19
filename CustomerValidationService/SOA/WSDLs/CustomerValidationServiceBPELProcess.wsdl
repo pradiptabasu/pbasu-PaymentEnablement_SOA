@@ -1,0 +1,27 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<wsdl:definitions name="CustomerValidationServiceBPELProcess" targetNamespace="http://xmlns.oracle.com/PaymentEnablement_SOA/CustomerValidationService/CustomerValidationServiceBPELProcess" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:client="http://xmlns.oracle.com/PaymentEnablement_SOA/CustomerValidationService/CustomerValidationServiceBPELProcess" xmlns:ns1="http://www.bank.org/payments" xmlns:plnk="http://docs.oasis-open.org/wsbpel/2.0/plnktype" xmlns:ns2="http://schemas.oracle.com/bpel/extension">
+   <plnk:partnerLinkType name="CustomerValidationServiceBPELProcess">
+      <plnk:role name="CustomerValidationServiceBPELProcessProvider" portType="client:CustomerValidationServiceBPELProcess"/>
+   </plnk:partnerLinkType>
+   <wsdl:types>
+      <schema xmlns="http://www.w3.org/2001/XMLSchema">
+         <import namespace="http://www.bank.org/payments" schemaLocation="../Schemas/CustomerValidationService.xsd"/>
+      </schema>
+   </wsdl:types>
+   <wsdl:message name="CustomerValidationServiceBPELProcessRequestMessage">
+      <wsdl:part name="payload" element="ns1:PaymentRequest"/>
+   </wsdl:message>
+   <wsdl:message name="CustomerValidationServiceBPELProcessResponseMessage">
+      <wsdl:part name="payload" element="ns1:paymentValidationResponse"/>
+   </wsdl:message>
+   <wsdl:message name="CustomerValidationFaultMessage">
+        <wsdl:part name="payload" element="ns1:FaultResponse"/>
+    </wsdl:message>
+   <wsdl:portType name="CustomerValidationServiceBPELProcess">
+      <wsdl:operation name="process">
+         <wsdl:input message="client:CustomerValidationServiceBPELProcessRequestMessage"/>
+         <wsdl:output message="client:CustomerValidationServiceBPELProcessResponseMessage"/>
+         <wsdl:fault name="CustomerValidationFault" message="client:CustomerValidationFaultMessage"/>
+      </wsdl:operation>
+   </wsdl:portType>
+</wsdl:definitions>

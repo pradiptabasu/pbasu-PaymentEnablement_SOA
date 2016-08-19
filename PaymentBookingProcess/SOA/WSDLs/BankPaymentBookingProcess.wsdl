@@ -1,0 +1,38 @@
+<?xml version= '1.0' encoding= 'UTF-8' ?>
+<wsdl:definitions
+     name="BankPaymentBookingProcess"
+     targetNamespace="http://xmlns.oracle.com/PaymentEnablement_SOA/PaymentBookingProcess/BankPaymentBookingProcess"
+     xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+     xmlns:client="http://xmlns.oracle.com/PaymentEnablement_SOA/PaymentBookingProcess/BankPaymentBookingProcess"
+     xmlns:ns1="http://www.demo.oracle.gringottBank.org"
+     xmlns:plnk="http://docs.oasis-open.org/wsbpel/2.0/plnktype"
+     xmlns:ns2="http://schemas.oracle.com/bpel/extension"
+    >
+    <plnk:partnerLinkType name="BankPaymentBookingProcess">
+        <plnk:role name="BankPaymentBookingProcessProvider" portType="client:BankPaymentBookingProcess"/>
+    </plnk:partnerLinkType>
+    <wsdl:types>
+        <schema xmlns="http://www.w3.org/2001/XMLSchema">
+            <import namespace="http://www.demo.oracle.gringottBank.org" schemaLocation="../Schemas/PaymentBookingProcess.xsd"/>
+        </schema>
+    </wsdl:types>
+    <wsdl:message name="BankPaymentBookingProcessRequestMessage">
+        <wsdl:part name="payload" element="ns1:paymentBookingRequest"/>
+    </wsdl:message>
+    <wsdl:message name="BankPaymentBookingProcessResponseMessage">
+        <wsdl:part name="payload" element="ns1:paymentBookingResponse"/>
+    </wsdl:message>
+    <wsdl:message name="PaymentRequestFaultMessage">
+        <wsdl:part name="payload" element="ns1:FaultResponse"/>
+    </wsdl:message>
+    <wsdl:portType name="BankPaymentBookingProcess">
+        <wsdl:operation name="process">
+            <wsdl:input message="client:BankPaymentBookingProcessRequestMessage"/>
+            <wsdl:output message="client:BankPaymentBookingProcessResponseMessage"/>
+            <wsdl:fault name="PaymentRequestNotPresent" message="client:PaymentRequestFaultMessage"/>
+            <wsdl:fault name="PaymentProcessRequestDuplicateFault" message="client:PaymentRequestFaultMessage"/>
+            <wsdl:fault name="PaymentRequestExpired" message="client:PaymentRequestFaultMessage"/>
+            <wsdl:fault name="PaymentRequestNotValidFault" message="client:PaymentRequestFaultMessage"/>
+        </wsdl:operation>
+    </wsdl:portType>
+</wsdl:definitions>

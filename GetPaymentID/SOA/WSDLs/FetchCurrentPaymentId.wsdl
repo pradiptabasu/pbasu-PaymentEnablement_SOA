@@ -1,0 +1,35 @@
+<wsdl:definitions
+     name="FetchCurrentPaymentId"
+     targetNamespace="http://xmlns.oracle.com/pcbpel/adapter/db/PaymentEnablement_SOA/GetPaymentID/FetchCurrentPaymentId"
+     xmlns:tns="http://xmlns.oracle.com/pcbpel/adapter/db/PaymentEnablement_SOA/GetPaymentID/FetchCurrentPaymentId"
+     xmlns:jca="http://xmlns.oracle.com/pcbpel/wsdl/jca/"
+     xmlns:plt="http://schemas.xmlsoap.org/ws/2003/05/partner-link/"
+     xmlns:db="http://xmlns.oracle.com/pcbpel/adapter/db/FetchCurrentPaymentId"
+     xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+    >
+  <plt:partnerLinkType name="FetchCurrentPaymentId_plt" >
+    <plt:role name="FetchCurrentPaymentId_role" >
+      <plt:portType name="tns:FetchCurrentPaymentId_ptt" />
+    </plt:role>
+  </plt:partnerLinkType>
+    <wsdl:types>
+      <schema xmlns="http://www.w3.org/2001/XMLSchema" >
+        <import namespace="http://xmlns.oracle.com/pcbpel/adapter/db/FetchCurrentPaymentId" schemaLocation="../Schemas/FetchCurrentPaymentId.xsd" />
+      </schema>
+      <schema xmlns="http://www.w3.org/2001/XMLSchema" >
+        <import namespace="http://xmlns.oracle.com/pcbpel/adapter/db/FetchCurrentPaymentId" schemaLocation="../Schemas/FetchCurrentPaymentId.xsd" />
+      </schema>
+    </wsdl:types>
+    <wsdl:message name="FetchCurrentPaymentIdInput_msg">
+        <wsdl:part name="FetchCurrentPaymentIdInput_msg" element="db:FetchCurrentPaymentIdInput"/>
+    </wsdl:message>
+    <wsdl:message name="FetchCurrentPaymentIdOutputCollection_msg">
+        <wsdl:part name="FetchCurrentPaymentIdOutputCollection" element="db:FetchCurrentPaymentIdOutputCollection"/>
+    </wsdl:message>
+    <wsdl:portType name="FetchCurrentPaymentId_ptt">
+        <wsdl:operation name="FetchCurrentPaymentId">
+            <wsdl:input message="tns:FetchCurrentPaymentIdInput_msg"/>
+            <wsdl:output message="tns:FetchCurrentPaymentIdOutputCollection_msg"/>
+        </wsdl:operation>
+    </wsdl:portType>
+</wsdl:definitions>

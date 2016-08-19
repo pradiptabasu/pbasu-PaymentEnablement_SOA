@@ -1,0 +1,19 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<wsdl:definitions name="BankAsyncPaymentProcessSimulator" targetNamespace="http://xmlns.oracle.com/PaymentEnablement_SOA/PaymentBookingProcess/BankAsyncPaymentProcessSimulator" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:client="http://xmlns.oracle.com/PaymentEnablement_SOA/PaymentBookingProcess/BankAsyncPaymentProcessSimulator" xmlns:ns1="http://www.demo.oracle.gringottBank.org" xmlns:plnk="http://docs.oasis-open.org/wsbpel/2.0/plnktype">
+   <wsdl:types>
+      <schema xmlns="http://www.w3.org/2001/XMLSchema">
+         <import namespace="http://www.demo.oracle.gringottBank.org" schemaLocation="../Schemas/PaymentBookingProcess.xsd"/>
+      </schema>
+   </wsdl:types>
+   <wsdl:message name="BankAsyncPaymentProcessSimulatorRequestMessage">
+      <wsdl:part name="payload" element="ns1:paymentBookingRequest"/>
+   </wsdl:message>
+   <wsdl:portType name="BankAsyncPaymentProcessSimulator">
+      <wsdl:operation name="process">
+         <wsdl:input message="client:BankAsyncPaymentProcessSimulatorRequestMessage"/>
+      </wsdl:operation>
+   </wsdl:portType>
+   <plnk:partnerLinkType name="BankAsyncPaymentProcessSimulator">
+      <plnk:role name="BankAsyncPaymentProcessSimulatorProvider" portType="client:BankAsyncPaymentProcessSimulator"/>
+   </plnk:partnerLinkType>
+</wsdl:definitions>

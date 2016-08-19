@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions name="CreditAvailabilityCheck"
+             targetNamespace="http://xmlns.oracle.com/PaymentEnablement_SOA/CreditAvailabilityService/CreditAvailabilityCheck"
+             xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+             xmlns:client="http://xmlns.oracle.com/PaymentEnablement_SOA/CreditAvailabilityService/CreditAvailabilityCheck"
+             xmlns:ns1="http://www.bank.org/payments"
+             xmlns:plnk="http://docs.oasis-open.org/wsbpel/2.0/plnktype">
+
+	<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	TYPE DEFINITION - List of services participating in this BPEL process
+	The default output of the BPEL designer uses strings as input and 
+	output to the BPEL Process. But you can define or import any XML 
+	Schema type and use them as part of the message types.
+	~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->   
+	<wsdl:types>
+		<schema xmlns="http://www.w3.org/2001/XMLSchema">
+			<import namespace="http://www.bank.org/payments" schemaLocation="../Schemas/CreditAvailabilityService.xsd" />
+		</schema>
+	</wsdl:types>
+
+	<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	MESSAGE TYPE DEFINITION - Definition of the message types used as 
+	part of the port type defintions
+	~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->      
+	<wsdl:message name="CreditAvailabilityCheckRequestMessage">
+		<wsdl:part name="payload" element="ns1:creditAvailabilityRequest" />
+	</wsdl:message>
+	<wsdl:message name="CreditAvailabilityCheckResponseMessage">
+		<wsdl:part name="payload" element="ns1:paymentValidationResponse" />
+	</wsdl:message>
+        <wsdl:message name="CreditAvailabilityFaultMessage">
+          <wsdl:part name="CreditAvailabilityFault" element="ns1:FaultResponse"/>
+        </wsdl:message>
+	<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	PORT TYPE DEFINITION - A port type groups a set of operations into
+	a logical service unit.
+	~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+
+	<!-- portType implemented by the CreditAvailabilityCheck BPEL process -->
+	<wsdl:portType name="CreditAvailabilityCheck">
+		<wsdl:operation name="process">
+			<wsdl:input  message="client:CreditAvailabilityCheckRequestMessage" />
+			<wsdl:output message="client:CreditAvailabilityCheckResponseMessage"/>
+                        <wsdl:fault name="CreditNotAvailable" message="client:CreditAvailabilityFaultMessage"/>
+		</wsdl:operation>
+	</wsdl:portType>
+
+	<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	PARTNER LINK TYPE DEFINITION
+	~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ --> 
+	<plnk:partnerLinkType name="CreditAvailabilityCheck">
+		<plnk:role name="CreditAvailabilityCheckProvider" portType="client:CreditAvailabilityCheck"/>
+	</plnk:partnerLinkType>
+</wsdl:definitions>

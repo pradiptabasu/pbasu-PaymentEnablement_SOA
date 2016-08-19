@@ -1,0 +1,19 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<application xmlns:soa="http://www.oracle.com/soa/rest" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://wadl.dev.java.net/2009/02">
+   <doc title="GetPaymentID">GetPaymentID</doc>
+   <grammars>
+      <schema xmlns="http://www.w3.org/2001/XMLSchema">
+            <import namespace="http://www.grigottbank.paymentid.org" schemaLocation="../Schemas/GetPaymentId.xsd"/>
+        </schema>
+   </grammars>
+   <resources>
+      <resource path="/">
+         <method name="GET" soa:wsdlOperation="process">
+            <request/>
+            <response status="200">
+               <representation mediaType="application/json" element="cns:paymentIdResponse" xmlns:cns="http://www.grigottbank.paymentid.org"/>
+            </response>
+         </method>
+      </resource>
+   </resources>
+</application>

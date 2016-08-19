@@ -1,0 +1,39 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<application xmlns:soa="http://www.oracle.com/soa/rest" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ns1="http://www.demo.oracle.gringottBank.org" xmlns="http://wadl.dev.java.net/2009/02">
+   <doc title="PaymentBooking">PaymentBooking</doc>
+   <grammars>
+      <schema xmlns="http://www.w3.org/2001/XMLSchema">
+            <import namespace="http://www.demo.oracle.gringottBank.org" schemaLocation="../Schemas/PaymentBookingProcess.xsd"/>
+        </schema>
+   </grammars>
+   <resources>
+      <resource path="/">
+         <method name="POST" soa:wsdlOperation="process">
+            <request>
+               <representation mediaType="application/xml" element="cns:paymentBookingRequest" xmlns:cns="http://www.demo.oracle.gringottBank.org"/>
+               <representation mediaType="application/json" element="cns:paymentBookingRequest" xmlns:cns="http://www.demo.oracle.gringottBank.org"/>
+            </request>
+            <response status="200">
+               <representation mediaType="application/xml" element="cns:paymentBookingResponse" xmlns:cns="http://www.demo.oracle.gringottBank.org"/>
+               <representation mediaType="application/json" element="cns:paymentBookingResponse" xmlns:cns="http://www.demo.oracle.gringottBank.org"/>
+            </response>
+            <response status="400" soa:wsdlFaultName="PaymentRequestNotValidFault">
+               <representation mediaType="application/xml" element="cns:FaultResponse" xmlns:cns="http://www.demo.oracle.gringottBank.org"/>
+               <representation mediaType="application/json" element="cns:FaultResponse" xmlns:cns="http://www.demo.oracle.gringottBank.org"/>
+            </response>
+            <response status="401" soa:wsdlFaultName="PaymentProcessRequestDuplicateFault">
+               <representation mediaType="application/xml" element="cns:FaultResponse" xmlns:cns="http://www.demo.oracle.gringottBank.org"/>
+               <representation mediaType="application/json" element="cns:FaultResponse" xmlns:cns="http://www.demo.oracle.gringottBank.org"/>
+            </response>
+            <response status="402" soa:wsdlFaultName="PaymentRequestNotPresent">
+               <representation mediaType="application/xml" element="cns:FaultResponse" xmlns:cns="http://www.demo.oracle.gringottBank.org"/>
+               <representation mediaType="application/json" element="cns:FaultResponse" xmlns:cns="http://www.demo.oracle.gringottBank.org"/>
+            </response>
+            <response status="403" soa:wsdlFaultName="PaymentRequestExpired">
+               <representation mediaType="application/xml" element="cns:FaultResponse" xmlns:cns="http://www.demo.oracle.gringottBank.org"/>
+               <representation mediaType="application/json" element="cns:FaultResponse" xmlns:cns="http://www.demo.oracle.gringottBank.org"/>
+            </response>
+         </method>
+      </resource>
+   </resources>
+</application>

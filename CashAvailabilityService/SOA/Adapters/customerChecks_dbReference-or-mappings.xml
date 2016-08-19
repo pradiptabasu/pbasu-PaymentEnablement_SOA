@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<object-persistence xmlns="http://www.eclipse.org/eclipselink/xsds/persistence" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:eclipselink="http://www.eclipse.org/eclipselink/xsds/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="Eclipse Persistence Services - 2.5.2.v20140319-9ad6abd">
+   <name>customerChecks_dbReference-OR</name>
+   <class-mapping-descriptors>
+      <class-mapping-descriptor xsi:type="object-relational-class-mapping-descriptor">
+         <class>customerChecks_dbReference.CustomerChecks</class>
+         <alias>CUSTOMER_CHECKS</alias>
+         <primary-key>
+            <field table="CUSTOMER_CHECKS" name="CUSTOMER_ID" xsi:type="column"/>
+         </primary-key>
+         <events/>
+         <querying>
+            <queries>
+               <query name="customerChecks_dbReferenceSelect" xsi:type="read-all-query">
+                  <reference-class>customerChecks_dbReference.CustomerChecks</reference-class>
+                  <container xsi:type="list-container-policy">
+                     <collection-type>java.util.Vector</collection-type>
+                  </container>
+               </query>
+            </queries>
+         </querying>
+         <attribute-mappings>
+            <attribute-mapping xsi:type="direct-mapping">
+               <attribute-name>customerId</attribute-name>
+               <field table="CUSTOMER_CHECKS" name="CUSTOMER_ID" xsi:type="column"/>
+               <attribute-classification>java.math.BigDecimal</attribute-classification>
+            </attribute-mapping>
+            <attribute-mapping xsi:type="direct-mapping">
+               <attribute-name>detokenized</attribute-name>
+               <field table="CUSTOMER_CHECKS" name="DETOKENIZED" xsi:type="column"/>
+               <attribute-classification>java.lang.String</attribute-classification>
+            </attribute-mapping>
+            <attribute-mapping xsi:type="direct-mapping">
+               <attribute-name>fraudChecked</attribute-name>
+               <field table="CUSTOMER_CHECKS" name="FRAUD_CHECKED" xsi:type="column"/>
+               <attribute-classification>java.lang.String</attribute-classification>
+            </attribute-mapping>
+            <attribute-mapping xsi:type="direct-mapping">
+               <attribute-name>customerValidated</attribute-name>
+               <field table="CUSTOMER_CHECKS" name="CUSTOMER_VALIDATED" xsi:type="column"/>
+               <attribute-classification>java.lang.String</attribute-classification>
+            </attribute-mapping>
+            <attribute-mapping xsi:type="direct-mapping">
+               <attribute-name>duplicateChecked</attribute-name>
+               <field table="CUSTOMER_CHECKS" name="DUPLICATE_CHECKED" xsi:type="column"/>
+               <attribute-classification>java.lang.String</attribute-classification>
+            </attribute-mapping>
+            <attribute-mapping xsi:type="direct-mapping">
+               <attribute-name>liquidityChecked</attribute-name>
+               <field table="CUSTOMER_CHECKS" name="LIQUIDITY_CHECKED" xsi:type="column"/>
+               <attribute-classification>java.lang.String</attribute-classification>
+            </attribute-mapping>
+            <attribute-mapping xsi:type="direct-mapping">
+               <attribute-name>limitChecked</attribute-name>
+               <field table="CUSTOMER_CHECKS" name="LIMIT_CHECKED" xsi:type="column"/>
+               <attribute-classification>java.lang.String</attribute-classification>
+            </attribute-mapping>
+            <attribute-mapping xsi:type="direct-mapping">
+               <attribute-name>waitingForManualValidation</attribute-name>
+               <field table="CUSTOMER_CHECKS" name="WAITING_FOR_MANUAL_VALIDATION" xsi:type="column"/>
+               <attribute-classification>java.lang.String</attribute-classification>
+            </attribute-mapping>
+            <attribute-mapping xsi:type="direct-mapping">
+               <attribute-name>loanAmount</attribute-name>
+               <field table="CUSTOMER_CHECKS" name="LOAN_AMOUNT" xsi:type="column"/>
+               <attribute-classification>java.math.BigDecimal</attribute-classification>
+            </attribute-mapping>
+         </attribute-mappings>
+         <descriptor-type>independent</descriptor-type>
+         <caching>
+            <cache-type>weak-reference</cache-type>
+            <cache-size>-1</cache-size>
+            <always-refresh>true</always-refresh>
+         </caching>
+         <remote-caching>
+            <cache-type>weak-reference</cache-type>
+            <cache-size>-1</cache-size>
+         </remote-caching>
+         <instantiation/>
+         <copying xsi:type="instantiation-copy-policy"/>
+         <tables>
+            <table name="CUSTOMER_CHECKS"/>
+         </tables>
+         <structure>structureName</structure>
+      </class-mapping-descriptor>
+   </class-mapping-descriptors>
+   <login xsi:type="database-login">
+      <platform-class>org.eclipse.persistence.platform.database.oracle.Oracle10Platform</platform-class>
+      <connection-url></connection-url>
+   </login>
+</object-persistence>

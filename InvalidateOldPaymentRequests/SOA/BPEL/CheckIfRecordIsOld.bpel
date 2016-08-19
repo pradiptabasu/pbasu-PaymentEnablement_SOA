@@ -1,0 +1,170 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<!--
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  Oracle JDeveloper BPEL Designer 
+  
+  Created: Tue May 17 13:41:47 IST 2016
+  Author:  prabasu
+  Type: BPEL 2.0 Process
+  Purpose: One Way BPEL Process
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+-->
+<process name="CheckIfRecordIsOld"
+               targetNamespace="http://xmlns.oracle.com/PaymentEnablement_SOA/InvalidateOldPaymentRequests/CheckIfRecordIsOld"
+               xmlns="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
+               xmlns:client="http://xmlns.oracle.com/PaymentEnablement_SOA/InvalidateOldPaymentRequests/CheckIfRecordIsOld"
+               xmlns:ora="http://schemas.oracle.com/xpath/extension"
+               xmlns:ui="http://xmlns.oracle.com/soa/designer"
+               xmlns:bpel="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
+         xmlns:bpelx="http://schemas.oracle.com/bpel/extension"
+         xmlns:ns1="http://xmlns.oracle.com/pcbpel/adapter/db/PaymentEnablement_SOA/InvalidateOldPaymentRequests/Poll_N_Delete_OldPaymentRequest"
+         xmlns:xp20="http://www.oracle.com/XSL/Transform/java/oracle.tip.pc.services.functions.Xpath20"
+         xmlns:bpws="http://schemas.xmlsoap.org/ws/2003/03/business-process/"
+         xmlns:oraext="http://www.oracle.com/XSL/Transform/java/oracle.tip.pc.services.functions.ExtFunc"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:dvm="http://www.oracle.com/XSL/Transform/java/oracle.tip.dvm.LookupValue"
+         xmlns:hwf="http://xmlns.oracle.com/bpel/workflow/xpath"
+         xmlns:ns2="http://xmlns.oracle.com/pcbpel/adapter/db/top/Poll_N_Delete_OldPaymentRequest"
+         xmlns:ids="http://xmlns.oracle.com/bpel/services/IdentityService/xpath"
+         xmlns:bpm="http://xmlns.oracle.com/bpmn20/extensions" xmlns:ess="http://xmlns.oracle.com/scheduler"
+         xmlns:xdk="http://schemas.oracle.com/bpel/extension/xpath/function/xdk"
+         xmlns:xref="http://www.oracle.com/XSL/Transform/java/oracle.tip.xref.xpath.XRefXPathFunctions"
+         xmlns:ldap="http://schemas.oracle.com/xpath/extension/ldap"
+         xmlns:ns3="http://xmlns.oracle.com/pcbpel/adapter/db/PaymentEnablement_SOA/InvalidateOldPaymentRequests/UpdateLogicalDeleteOrStatus"
+         xmlns:ns4="http://xmlns.oracle.com/pcbpel/adapter/db/PaymentEnablement_SOA/InvalidateOldPaymentRequests/UpdateLogicalDelete"
+         xmlns:ns5="http://xmlns.oracle.com/pcbpel/adapter/db/top/UpdateLogicalDelete"
+         xmlns:ns6="http://xmlns.oracle.com/pcbpel/adapter/db/PaymentEnablement_SOA/InvalidateOldPaymentRequests/UpdateStatus"
+         xmlns:ns7="http://xmlns.oracle.com/pcbpel/adapter/db/top/UpdateStatus"
+         xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <!-- 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      PARTNERLINKS                                                      
+      List of services participating in this BPEL process               
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  -->
+
+  <!-- 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      VARIABLES                                                        
+      List of messages and XML documents used within this BPEL process 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  -->
+
+  <!-- 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+     ORCHESTRATION LOGIC                                               
+     Set of activities coordinating the flow of messages across the    
+     services integrated within this business process                  
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  -->
+  <import namespace="http://xmlns.oracle.com/pcbpel/adapter/db/PaymentEnablement_SOA/InvalidateOldPaymentRequests/Poll_N_Delete_OldPaymentRequest"
+          location="../WSDLs/Poll_N_Delete_OldPaymentRequest.wsdl" importType="http://schemas.xmlsoap.org/wsdl/"
+          ui:processWSDL="true"/>
+  <partnerLinks>
+    <partnerLink name="Poll_N_Delete_OldPaymentRequest" partnerLinkType="ns1:Poll_N_Delete_OldPaymentRequest_plt"
+                 myRole="Poll_N_Delete_OldPaymentRequest_role"/>
+    <partnerLink name="UpdateLogicalDelete" partnerLinkType="ns4:UpdateLogicalDelete_plt"
+                 partnerRole="UpdateLogicalDelete_role"/>
+    <partnerLink name="UpdateStatus" partnerLinkType="ns6:UpdateStatus_plt" partnerRole="UpdateStatus_role"/>
+  </partnerLinks>
+  <variables>
+    <variable name="receiveInput" messageType="ns1:PaymentReqTransCollection_msg"/>
+    <variable name="Update_LOGICALUPDATE_UNREAD" messageType="ns4:PaymentReqTransCollection_msg"/>
+    <variable name="UpdateStatusEXPIRED_update" messageType="ns6:PaymentReqTransCollection_msg"/>
+    <variable name="requestTime" type="xsd:string"/>
+    <variable name="currentTime" type="xsd:string"/>
+    <variable name="instanceId" type="xsd:integer"/>
+    <variable name="checkTime" type="xsd:string"/>
+    <variable name="checkTime1day" type="xsd:string"/>
+    <variable name="checkTime5min" type="xsd:string"/>
+    <variable name="checkTime1day5min" type="xsd:string"/>
+  </variables>
+  <sequence name="main">
+
+    <!-- Receive input from requestor. (Note: This maps to operation defined in CheckIfRecordIsOld.wsdl) -->
+    <receive name="receiveInput" variable="receiveInput" createInstance="yes"
+             partnerLink="Poll_N_Delete_OldPaymentRequest" portType="ns1:Poll_N_Delete_OldPaymentRequest_ptt"
+             operation="receive"/>
+   <assign name="Assign1">
+      <copy>
+        <from>xp20:current-dateTime()</from>
+        <to>$currentTime</to>
+      </copy>
+      <copy>
+        <from>xp20:subtract-dayTimeDuration-from-dateTime(xp20:current-date(),'PT5M')</from>
+        <to>$checkTime</to>
+      </copy>
+      <copy>
+        <from>xp20:subtract-dayTimeDuration-from-dateTime(xp20:current-date(),'P1D')</from>
+        <to>$checkTime1day</to>
+      </copy>
+      <copy>
+        <from>xp20:subtract-dayTimeDuration-from-dateTime(xp20:current-date(),'P0Y0M0DT0H5M0S')</from>
+        <to>$checkTime5min</to>
+      </copy>
+      <copy>
+        <from>xp20:subtract-dayTimeDuration-from-dateTime(xp20:current-date(),'P1DT5M')</from>
+        <to>$checkTime1day5min</to>
+      </copy>
+      <copy>
+        <from>ora:getInstanceId()</from>
+        <to>$instanceId</to>
+      </copy>
+      <copy>
+        <from>$receiveInput.PaymentReqTransCollection/ns2:PaymentReqTrans/ns2:requesttime</from>
+        <to>$requestTime</to>
+      </copy>
+    </assign>
+    <extensionActivity>
+      <bpelx:exec name="Java_Embedding1" language="java">
+        <![CDATA[String CurrentTime   = (String)getVariableData("currentTime");      
+String requestTime   = (String)getVariableData("requestTime");  
+String checkTime   = (String)getVariableData("checkTime");  
+String checkTime1day   = (String)getVariableData("checkTime1day"); 
+String checkTime5min   = (String)getVariableData("checkTime5min"); 
+String checkTime1day5min   = (String)getVariableData("checkTime1day5min"); 
+System.out.println(" , checkTime: " + checkTime + " , requestTime: " + requestTime + " , CurrentTime : " + CurrentTime + " , checkTime1day: " + checkTime1day + " , checkTime5min: " + checkTime5min + " , checkTime1day5min: " + checkTime1day5min);]]>
+      </bpelx:exec>
+    </extensionActivity>
+    <if name="isOlderThan5mins">
+      <documentation>
+        <![CDATA[OlderThan5mins]]>
+      </documentation>
+      <condition>$receiveInput.PaymentReqTransCollection/ns2:PaymentReqTrans/ns2:requesttime &lt; xp20:subtract-dayTimeDuration-from-dateTime(xp20:current-date(),'PT5M')</condition>
+      <sequence name="Sequence1">
+        <assign name="AssignStatusEXPIRED">
+          <copy>
+            <from>$receiveInput.PaymentReqTransCollection/ns2:PaymentReqTrans/ns2:paymentid</from>
+            <to>$UpdateStatusEXPIRED_update.PaymentReqTransCollection/ns7:PaymentReqTrans/ns7:paymentid</to>
+          </copy>
+          <copy>
+            <from>'EXPIRED'</from>
+            <to>$UpdateStatusEXPIRED_update.PaymentReqTransCollection/ns7:PaymentReqTrans/ns7:status</to>
+          </copy>
+        </assign>
+        <invoke name="UpdateStatusEXPIRED" bpelx:invokeAsDetail="no" partnerLink="UpdateStatus"
+                portType="ns6:UpdateStatus_ptt" operation="update" inputVariable="UpdateStatusEXPIRED_update"/>
+      </sequence>
+      <else>
+        <documentation>
+          <![CDATA[NotOlderThan5mins]]>
+        </documentation>
+        <sequence name="Sequence2">
+          <assign name="Assign_LOGICALUPDATE_UNREAD">
+            <copy>
+              <from>$receiveInput.PaymentReqTransCollection/ns2:PaymentReqTrans/ns2:paymentid</from>
+              <to>$Update_LOGICALUPDATE_UNREAD.PaymentReqTransCollection/ns5:PaymentReqTrans/ns5:paymentid</to>
+            </copy>
+            <copy>
+              <from>'UNREAD'</from>
+              <to>$Update_LOGICALUPDATE_UNREAD.PaymentReqTransCollection/ns5:PaymentReqTrans/ns5:soalogicaldel</to>
+            </copy>
+          </assign>
+          <invoke name="Update_LOGICALUPDATE_UNREAD" bpelx:invokeAsDetail="no" partnerLink="UpdateLogicalDelete"
+                  portType="ns4:UpdateLogicalDelete_ptt" operation="update"
+                  inputVariable="Update_LOGICALUPDATE_UNREAD"/>
+        </sequence>
+      </else>
+    </if>
+  </sequence>
+</process>

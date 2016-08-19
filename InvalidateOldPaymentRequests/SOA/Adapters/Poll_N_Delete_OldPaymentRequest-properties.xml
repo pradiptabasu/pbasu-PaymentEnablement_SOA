@@ -1,0 +1,42 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+   <entry key="root_descriptor_alias">PAYMENT_REQ_TRANS</entry>
+   <entry key="PAYMENT_REQ_TRANS.LOANAMOUNT:db_column_precision">10</entry>
+   <entry key="PAYMENT_REQ_TRANS.STATUS:db_column_type">VARCHAR2</entry>
+   <entry key="PAYMENT_REQ_TRANS.LOANAMOUNT:db_column_type">NUMBER</entry>
+   <entry key="PAYMENT_REQ_TRANS.SOALOGICALDEL:db_column_type">VARCHAR2</entry>
+   <entry key="PAYMENT_REQ_TRANS.LOANAMOUNT:db_column_scale">0</entry>
+   <entry key="PAYMENT_REQ_TRANS.FINTECHID:db_column_type">VARCHAR2</entry>
+   <entry key="PAYMENT_REQ_TRANS.STATUS:db_column_size">20</entry>
+   <entry key="PAYMENT_REQ_TRANS.CUSTOMER_ID:db_column_precision">10</entry>
+   <entry key="PAYMENT_REQ_TRANS:db_table_type">TABLE</entry>
+   <entry key="PAYMENT_REQ_TRANS.SOALOGICALDEL:db_column_size">30</entry>
+   <entry key="PAYMENT_REQ_TRANS.CUSTOMERASSET:db_column_not_null">false</entry>
+   <entry key="PAYMENT_REQ_TRANS.LOANAMOUNT:db_column_not_null">false</entry>
+   <entry key="PAYMENT_REQ_TRANS.FINTECHID:db_column_size">20</entry>
+   <entry key="PAYMENT_REQ_TRANS.CUSTOMERASSET:db_column_scale">0</entry>
+   <entry key="PAYMENT_REQ_TRANS.PAYMENTID:db_column_precision">10</entry>
+   <entry key="PAYMENT_REQ_TRANS.SOALOGICALDEL:db_column_not_null">false</entry>
+   <entry key="PAYMENT_REQ_TRANS.CUSTOMERASSET:db_column_type">NUMBER</entry>
+   <entry key="PAYMENT_REQ_TRANS:db_column_7">SOALOGICALDEL</entry>
+   <entry key="PAYMENT_REQ_TRANS:db_column_6">STATUS</entry>
+   <entry key="PAYMENT_REQ_TRANS.PAYMENTID:db_column_not_null">true</entry>
+   <entry key="PAYMENT_REQ_TRANS:db_column_5">CUSTOMERASSET</entry>
+   <entry key="PAYMENT_REQ_TRANS:db_column_4">LOANAMOUNT</entry>
+   <entry key="PAYMENT_REQ_TRANS:db_column_3">FINTECHID</entry>
+   <entry key="PAYMENT_REQ_TRANS:db_column_2">REQUESTTIME</entry>
+   <entry key="PAYMENT_REQ_TRANS:db_column_1">CUSTOMER_ID</entry>
+   <entry key="PAYMENT_REQ_TRANS:db_column_0">PAYMENTID</entry>
+   <entry key="PAYMENT_REQ_TRANS.STATUS:db_column_not_null">true</entry>
+   <entry key="PAYMENT_REQ_TRANS.FINTECHID:db_column_not_null">true</entry>
+   <entry key="PAYMENT_REQ_TRANS.CUSTOMERASSET:db_column_precision">10</entry>
+   <entry key="PAYMENT_REQ_TRANS.CUSTOMER_ID:db_column_type">NUMBER</entry>
+   <entry key="PAYMENT_REQ_TRANS.PAYMENTID:db_column_scale">0</entry>
+   <entry key="return_single_result_set">false</entry>
+   <entry key="PAYMENT_REQ_TRANS.REQUESTTIME:db_column_not_null">true</entry>
+   <entry key="PAYMENT_REQ_TRANS.CUSTOMER_ID:db_column_scale">0</entry>
+   <entry key="PAYMENT_REQ_TRANS.CUSTOMER_ID:db_column_not_null">true</entry>
+   <entry key="PAYMENT_REQ_TRANS.REQUESTTIME:db_column_type">DATE</entry>
+   <entry key="PAYMENT_REQ_TRANS.PAYMENTID:db_column_type">NUMBER</entry>
+</properties>

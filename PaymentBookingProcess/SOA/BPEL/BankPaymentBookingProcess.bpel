@@ -1,0 +1,325 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<!--
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  Oracle JDeveloper BPEL Designer 
+  
+  Created: Mon Apr 25 16:10:12 IST 2016
+  Author:  prabasu
+  Type: BPEL 2.0 Process
+  Purpose: Synchronous BPEL Process
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+-->
+<process name="BankPaymentBookingProcess"
+         targetNamespace="http://xmlns.oracle.com/PaymentEnablement_SOA/PaymentBookingProcess/BankPaymentBookingProcess"
+         xmlns="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
+         xmlns:client="http://xmlns.oracle.com/PaymentEnablement_SOA/PaymentBookingProcess/BankPaymentBookingProcess"
+         xmlns:ora="http://schemas.oracle.com/xpath/extension" xmlns:ui="http://xmlns.oracle.com/soa/designer"
+         xmlns:bpelx="http://schemas.oracle.com/bpel/extension"
+         xmlns:bpel="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
+         xmlns:ns1="http://xmlns.oracle.com/PaymentEnablement_SOA/PaymentBookingProcess/BankAsyncPaymentProcessSimulator"
+         xmlns:xp20="http://www.oracle.com/XSL/Transform/java/oracle.tip.pc.services.functions.Xpath20"
+         xmlns:bpws="http://schemas.xmlsoap.org/ws/2003/03/business-process/"
+         xmlns:oraext="http://www.oracle.com/XSL/Transform/java/oracle.tip.pc.services.functions.ExtFunc"
+         xmlns:dvm="http://www.oracle.com/XSL/Transform/java/oracle.tip.dvm.LookupValue"
+         xmlns:hwf="http://xmlns.oracle.com/bpel/workflow/xpath"
+         xmlns:ids="http://xmlns.oracle.com/bpel/services/IdentityService/xpath"
+         xmlns:ns2="http://www.demo.oracle.gringottBank.org" xmlns:bpm="http://xmlns.oracle.com/bpmn20/extensions"
+         xmlns:ess="http://xmlns.oracle.com/scheduler"
+         xmlns:xdk="http://schemas.oracle.com/bpel/extension/xpath/function/xdk"
+         xmlns:xref="http://www.oracle.com/XSL/Transform/java/oracle.tip.xref.xpath.XRefXPathFunctions"
+         xmlns:ldap="http://schemas.oracle.com/xpath/extension/ldap" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+         xmlns:ns3="http://xmlns.oracle.com/pcbpel/adapter/db/PaymentEnablement_SOA/PaymentBookingProcess/CheckPaymentRequestValid"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:ns4="http://xmlns.oracle.com/pcbpel/adapter/db/top/CheckPaymentRequestValid">
+  <import ui:processWSDL="true"
+          namespace="http://xmlns.oracle.com/PaymentEnablement_SOA/PaymentBookingProcess/BankPaymentBookingProcess"
+          location="../WSDLs/BankPaymentBookingProcess.wsdl" importType="http://schemas.xmlsoap.org/wsdl/"/>
+  <!-- 
+      ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        PARTNERLINKS                                                      
+        List of services participating in this BPEL process               
+      ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    -->
+  <partnerLinks>
+    <!-- 
+      The 'client' role represents the requester of this service. It is 
+      used for callback. The location and correlation information associated
+      with the client role are automatically set using WS-Addressing.
+    -->
+    <partnerLink name="bankpaymentbookingprocess_client" partnerLinkType="client:BankPaymentBookingProcess"
+                 myRole="BankPaymentBookingProcessProvider"/>
+    <partnerLink name="BankAsyncPaymentProcessSimulator.bankasyncpaymentprocesssimulator_client"
+                 partnerLinkType="ns1:BankAsyncPaymentProcessSimulator"
+                 partnerRole="BankAsyncPaymentProcessSimulatorProvider"/>
+    <partnerLink name="CheckPaymentRequestValid" partnerLinkType="ns3:CheckPaymentRequestValid_plt"
+                 partnerRole="CheckPaymentRequestValid_role"/>
+  </partnerLinks>
+  <!-- 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      VARIABLES                                                        
+      List of messages and XML documents used within this BPEL process 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  -->
+  <variables>
+    <!-- Reference to the message passed as input during initiation -->
+    <variable name="inputVariable" messageType="client:BankPaymentBookingProcessRequestMessage"/>
+    <!-- Reference to the message that will be returned to the requester-->
+    <variable name="outputVariable" messageType="client:BankPaymentBookingProcessResponseMessage"/>
+    <variable name="InvokeBankAsyncPaymentProcessSimulator_process_InputVariable"
+              messageType="ns1:BankAsyncPaymentProcessSimulatorRequestMessage"/>
+    <variable name="title" type="xsd:string"/>
+    <variable name="Invoke_CheckPaymentRequestValid_InputVariable"
+              messageType="ns3:selectByPrimaryKey_inputParameters"/>
+    <variable name="Invoke_CheckPaymentRequestValid_OutputVariable" messageType="ns3:PaymentReqTransCollection_msg"/>
+    <variable name="PaymentRequestFaultVar" messageType="client:PaymentRequestFaultMessage"/>
+    <variable name="Invoke_UpdatePaymentRequestStatus_InputVariable" messageType="ns3:PaymentReqTransCollection_msg"/>
+    <variable name="CustomerToken" type="xsd:string"/>
+    <variable name="CustomerId" type="xsd:int"/>
+  </variables>
+  <!-- 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+     ORCHESTRATION LOGIC                                               
+     Set of activities coordinating the flow of messages across the    
+     services integrated within this business process                  
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  -->
+  <sequence name="main">
+    <!-- Receive input from requestor. (Note: This maps to operation defined in BankPaymentBookingProcess.wsdl) -->
+    <receive name="receiveInput" partnerLink="bankpaymentbookingprocess_client"
+             portType="client:BankPaymentBookingProcess" operation="process" variable="inputVariable"
+             createInstance="yes"/>
+    <assign name="assignTitle">
+      <copy>
+        <from>$inputVariable.payload/ns2:FintechPaymentRequestId</from>
+        <to>$title</to>
+      </copy>
+    </assign>
+    <extensionActivity>
+      <bpelx:exec name="setCompositeInstanceTitle" language="java">
+        <![CDATA[String instanceTitle   = (String)getVariableData("title");    
+setTitle(instanceTitle);           
+setCompositeInstanceTitle(instanceTitle); 
+setFlowInstanceTitle(instanceTitle);]]>
+      </bpelx:exec>
+    </extensionActivity>
+    <assign name="assignCustomerToken">
+      <copy>
+        <from>$inputVariable.payload/ns2:CustomerToken</from>
+        <to>$CustomerToken</to>
+      </copy>
+    </assign>
+    <extensionActivity>
+      <bpelx:exec name="ConvertCustomerToken_TO_CustomerId" language="java">
+        <![CDATA[try                                        
+{           
+    String CustomerToken = (String)getVariableData("CustomerToken");    
+    int CustomerId = Integer.parseInt(CustomerToken, 16);     
+    setVariableData("CustomerId",CustomerId); 
+}                                        
+catch(Exception e)                                        
+{                                        
+    e.printStackTrace();                                         
+}]]>
+      </bpelx:exec>
+    </extensionActivity>
+    <assign name="generate_Default_Value">
+      <bpelx:annotation>
+        <bpelx:pattern patternName="bpelx:transformation"></bpelx:pattern>
+      </bpelx:annotation>
+      <copy>
+        <from>ora:doXSLTransformForDoc("../Transformations/generate_Default_Value.xsl", $inputVariable.payload)</from>
+        <to variable="inputVariable" part="payload"/>
+      </copy>
+    </assign>
+    <assign name="AssignInputForCheckPaymentRequestValid">
+      <copy>
+        <from>$inputVariable.payload/ns2:FintechPaymentRequestId</from>
+        <to>$Invoke_CheckPaymentRequestValid_InputVariable.selectByPrimaryKey_inputParameters/ns4:paymentid</to>
+      </copy>
+    </assign>
+    <invoke name="Invoke_CheckPaymentRequestValid" bpelx:invokeAsDetail="no" partnerLink="CheckPaymentRequestValid"
+            portType="ns3:CheckPaymentRequestValid_ptt" operation="selectByPrimaryKey"
+            inputVariable="Invoke_CheckPaymentRequestValid_InputVariable"
+            outputVariable="Invoke_CheckPaymentRequestValid_OutputVariable"/>
+    <if name="isPaymentRequestValid">
+      <documentation>
+        <![CDATA[paymentRequestValid]]>
+      </documentation>
+      <condition>oraext:compare-ignore-case($Invoke_CheckPaymentRequestValid_OutputVariable.PaymentReqTransCollection/ns4:PaymentReqTrans/ns4:status,'VALID') = 0</condition>
+      <sequence>
+        <assign name="AssignInputForSimulatorCall">
+          <copy>
+            <from>$inputVariable.payload/ns2:FintechPaymentRequestId</from>
+            <to>$InvokeBankAsyncPaymentProcessSimulator_process_InputVariable.payload/ns2:FintechPaymentRequestId</to>
+          </copy>
+          <copy>
+            <from>$inputVariable.payload/ns2:CustomerToken</from>
+            <to>$InvokeBankAsyncPaymentProcessSimulator_process_InputVariable.payload/ns2:CustomerToken</to>
+          </copy>
+          <copy>
+            <from>$inputVariable.payload/ns2:creditAmount</from>
+            <to>$InvokeBankAsyncPaymentProcessSimulator_process_InputVariable.payload/ns2:creditAmount</to>
+          </copy>
+          <copy>
+            <from>$inputVariable.payload/ns2:cashAmount</from>
+            <to>$InvokeBankAsyncPaymentProcessSimulator_process_InputVariable.payload/ns2:cashAmount</to>
+          </copy>
+          <copy>
+            <from>$inputVariable.payload/ns2:finTechID</from>
+            <to>$InvokeBankAsyncPaymentProcessSimulator_process_InputVariable.payload/ns2:finTechID</to>
+          </copy>
+          <copy>
+            <from>$inputVariable.payload/ns2:PaymentCategory</from>
+            <to>$InvokeBankAsyncPaymentProcessSimulator_process_InputVariable.payload/ns2:PaymentCategory</to>
+          </copy>
+          <copy>
+            <from>$inputVariable.payload/ns2:SalesChannel</from>
+            <to>$InvokeBankAsyncPaymentProcessSimulator_process_InputVariable.payload/ns2:SalesChannel</to>
+          </copy>
+          <copy>
+            <from>$inputVariable.payload/ns2:TechnicalChannel</from>
+            <to>$InvokeBankAsyncPaymentProcessSimulator_process_InputVariable.payload/ns2:TechnicalChannel</to>
+          </copy>
+          <copy>
+            <from>$inputVariable.payload/ns2:Region</from>
+            <to>$InvokeBankAsyncPaymentProcessSimulator_process_InputVariable.payload/ns2:Region</to>
+          </copy>
+        </assign>
+        <invoke name="InvokeBankAsyncPaymentProcessSimulator" bpelx:invokeAsDetail="no"
+                partnerLink="BankAsyncPaymentProcessSimulator.bankasyncpaymentprocesssimulator_client"
+                portType="ns1:BankAsyncPaymentProcessSimulator" operation="process"
+                inputVariable="InvokeBankAsyncPaymentProcessSimulator_process_InputVariable">
+          <bpelx:conversationId>$inputVariable.payload/ns2:paymentID</bpelx:conversationId>
+        </invoke>
+        <assign name="Assign_UpdatePaymentRequestStatus">
+          <copy>
+            <from>'IN PROGRESS'</from>
+            <to>$Invoke_UpdatePaymentRequestStatus_InputVariable.PaymentReqTransCollection/ns4:PaymentReqTrans/ns4:status</to>
+          </copy>
+          <copy>
+            <from>$inputVariable.payload/ns2:FintechPaymentRequestId</from>
+            <to>$Invoke_UpdatePaymentRequestStatus_InputVariable.PaymentReqTransCollection/ns4:PaymentReqTrans/ns4:paymentid</to>
+          </copy>
+        </assign>
+        <invoke name="Invoke_UpdatePaymentRequestStatus" bpelx:invokeAsDetail="no"
+                partnerLink="CheckPaymentRequestValid" portType="ns3:CheckPaymentRequestValid_ptt" operation="update"
+                inputVariable="Invoke_UpdatePaymentRequestStatus_InputVariable"/>
+        <assign name="AssignOutput">
+          <copy>
+            <from>'IN PROGRESS'</from>
+            <to>$outputVariable.payload/ns2:paymentBookingStatus</to>
+          </copy>
+          <copy>
+            <from>$inputVariable.payload/ns2:FintechPaymentRequestId</from>
+            <to>$outputVariable.payload/ns2:paymentID</to>
+          </copy>
+        </assign>
+        <reply name="replyOutput" partnerLink="bankpaymentbookingprocess_client"
+               portType="client:BankPaymentBookingProcess" operation="process" variable="outputVariable">
+          <bpelx:toProperties>
+            <bpelx:toProperty name="rest.binding.http.Access-Control-Allow-Origin">'*'</bpelx:toProperty>
+            <bpelx:toProperty name="rest.binding.http.Access-Control-Allow-Credentials">'false'</bpelx:toProperty>
+            <bpelx:toProperty name="rest.binding.http.Access-Control-Allow-Methods">'GET, POST, OPTIONS'</bpelx:toProperty>
+            <bpelx:toProperty name="rest.binding.http.Access-Control-Allow-Headers">'Content-Type'</bpelx:toProperty>
+          </bpelx:toProperties>
+        </reply>
+      </sequence>
+      <elseif>
+        <documentation>
+          <![CDATA[DuplicatePaymentProcessRequest]]>
+        </documentation>
+        <condition>oraext:compare-ignore-case($Invoke_CheckPaymentRequestValid_OutputVariable.PaymentReqTransCollection/ns4:PaymentReqTrans/ns4:status,'IN PROGRESS') = 0</condition>
+        <sequence name="Sequence4">
+          <assign name="AssignDuplicatePaymentProcessRequestFault">
+            <copy>
+              <from>concat('PaymentRequest #',$inputVariable.payload/ns2:FintechPaymentRequestId,' is duplicate')</from>
+              <to>$PaymentRequestFaultVar.payload/ns2:summary</to>
+            </copy>
+            <copy>
+              <from>concat('PaymentRequest #',$inputVariable.payload/ns2:FintechPaymentRequestId,' is duplicate')</from>
+              <to>$PaymentRequestFaultVar.payload/ns2:detail</to>
+            </copy>
+            <copy>
+              <from>400</from>
+              <to>$PaymentRequestFaultVar.payload/ns2:code</to>
+            </copy>
+          </assign>
+          <throw name="Throw_DuplicatePaymentProcessRequest" faultName="client:PaymentProcessRequestDuplicateFault"
+                 faultVariable="PaymentRequestFaultVar"/>
+        </sequence>
+      </elseif>
+      <elseif>
+        <documentation>
+          <![CDATA[paymentRequestNotPresent]]>
+        </documentation>
+        <condition>count($Invoke_CheckPaymentRequestValid_OutputVariable.PaymentReqTransCollection/ns4:PaymentReqTrans) &lt; 1</condition>
+        <sequence name="Sequence3">
+          <assign name="AssignPaymentRequestNotPresent">
+            <copy>
+              <from>concat('PaymentRequest #',$inputVariable.payload/ns2:FintechPaymentRequestId,' is not present')</from>
+              <to>$PaymentRequestFaultVar.payload/ns2:summary</to>
+            </copy>
+            <copy>
+              <from>concat('PaymentRequest #',$inputVariable.payload/ns2:FintechPaymentRequestId,' is not present')</from>
+              <to>$PaymentRequestFaultVar.payload/ns2:detail</to>
+            </copy>
+            <copy>
+              <from>400</from>
+              <to>$PaymentRequestFaultVar.payload/ns2:code</to>
+            </copy>
+          </assign>
+          <throw name="Throw_paymentRequestNotPresent" faultName="client:PaymentRequestNotPresent"
+                 faultVariable="PaymentRequestFaultVar"/>
+        </sequence>
+      </elseif>
+      <elseif>
+        <documentation>
+          <![CDATA[paymentRequestExpired]]>
+        </documentation>
+        <condition>oraext:compare-ignore-case($Invoke_CheckPaymentRequestValid_OutputVariable.PaymentReqTransCollection/ns4:PaymentReqTrans/ns4:status,'EXPIRED') = 0</condition>
+        <sequence name="Sequence5">
+          <assign name="AssignPaymentRequestExpired">
+            <copy>
+              <from>concat('PaymentRequest #',$inputVariable.payload/ns2:FintechPaymentRequestId,' has expired')</from>
+              <to>$PaymentRequestFaultVar.payload/ns2:summary</to>
+            </copy>
+            <copy>
+              <from>concat('PaymentRequest #',$inputVariable.payload/ns2:FintechPaymentRequestId,' has expired')</from>
+              <to>$PaymentRequestFaultVar.payload/ns2:detail</to>
+            </copy>
+            <copy>
+              <from>400</from>
+              <to>$PaymentRequestFaultVar.payload/ns2:code</to>
+            </copy>
+          </assign>
+          <throw name="Throw_paymentRequestExpired" faultName="client:PaymentRequestExpired"
+                 faultVariable="PaymentRequestFaultVar"/>
+        </sequence>
+      </elseif>
+      <else>
+        <documentation>
+          <![CDATA[paymentRequestNotValid]]>
+        </documentation>
+        <sequence name="Sequence2">
+          <assign name="AssignPaymentRequestNotValidFault">
+            <copy>
+              <from>concat('PaymentRequest #',$inputVariable.payload/ns2:FintechPaymentRequestId,' is not valid')</from>
+              <to>$PaymentRequestFaultVar.payload/ns2:summary</to>
+            </copy>
+            <copy>
+              <from>concat('PaymentRequest #',$inputVariable.payload/ns2:FintechPaymentRequestId,' is not valid')</from>
+              <to>$PaymentRequestFaultVar.payload/ns2:detail</to>
+            </copy>
+            <copy>
+              <from>400</from>
+              <to>$PaymentRequestFaultVar.payload/ns2:code</to>
+            </copy>
+          </assign>
+          <throw name="Throw_PaymentRequestNotValid" faultName="client:PaymentRequestNotValidFault"
+                 faultVariable="PaymentRequestFaultVar"/>
+        </sequence>
+      </else>
+    </if>
+    <!-- Generate reply to synchronous request -->
+  </sequence>
+</process>

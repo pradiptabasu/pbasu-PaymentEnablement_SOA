@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>PaymentEnablement_SOA</groupId>
+    <artifactId>PaymentEnablement_SOA</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+    <modules>
+        <!-- Add project modules -->
+    	<module>demoReceivePaymentRequest</module>
+    	<module>demoCheckCustomerFunds</module>
+    	<module>demoCheckBankFundAvailability</module>
+    	<module>checkCustomerFraud</module>
+    	<module>demoCheckCustomerFraud</module>
+    	<module>Service_1</module>
+    	<module>Project1</module>
+    	<module>Project2</module>
+    	<module>PaymentEnablement_ISA_MDS</module>
+    	<module>BankManualApprovalFlow</module>
+    	<module>PaymentBookingProcess</module>
+    	<module>SOAPrefVars</module>
+    	<module>PaymentValidationProcess</module>
+    	<module>TestPRJ</module>
+    	<module>ProcessOrder</module>
+    	<module>GetPaymentID</module>
+    	<module>InvalidateOldPaymentRequests</module>
+    	<module>CreditAvailabilityService</module>
+    	<module>DummyCashAvaiability</module>
+    	<module>CashAvailabilityService</module>
+    	<module>CustomerValidationService</module>
+    </modules>
+</project>

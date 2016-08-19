@@ -1,0 +1,11 @@
+<adapter-config name="FetchCurrentPaymentId" adapter="db" wsdlLocation="../WSDLs/FetchCurrentPaymentId.wsdl" xmlns="http://platform.integration.oracle/blocks/adapter/fw/metadata">
+  
+  <connection-factory UIConnectionName="PaymentsEnablement_ISA-grigottbank" location="eis/DB/PaymentsEnablement_ISA-grigottbank"/>
+  <endpoint-interaction portType="FetchCurrentPaymentId_ptt" operation="FetchCurrentPaymentId">
+    <interaction-spec className="oracle.tip.adapter.db.DBPureSQLInteractionSpec">
+      <property name="SqlString" value="select PAYMENTID_SEQ.NEXTVAL from dual"/>
+      <property name="GetActiveUnitOfWork" value="false"/>
+    </interaction-spec>
+  </endpoint-interaction>
+
+</adapter-config>

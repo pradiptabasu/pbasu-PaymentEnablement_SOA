@@ -1,0 +1,44 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+   <entry key="root_descriptor_alias">CUSTOMER_CHECKS</entry>
+   <entry key="CUSTOMER_CHECKS.DUPLICATE_CHECKED:db_column_not_null">false</entry>
+   <entry key="CUSTOMER_CHECKS:db_table_type">TABLE</entry>
+   <entry key="CUSTOMER_CHECKS.LIMIT_CHECKED:db_column_type">VARCHAR2</entry>
+   <entry key="CUSTOMER_CHECKS.CUSTOMER_ID:db_column_scale">0</entry>
+   <entry key="CUSTOMER_CHECKS.CUSTOMER_ID:db_column_precision">38</entry>
+   <entry key="CUSTOMER_CHECKS.CUSTOMER_VALIDATED:db_column_type">VARCHAR2</entry>
+   <entry key="CUSTOMER_CHECKS.CUSTOMER_VALIDATED:db_column_not_null">false</entry>
+   <entry key="CUSTOMER_CHECKS.LOAN_AMOUNT:db_column_type">NUMBER</entry>
+   <entry key="CUSTOMER_CHECKS.LIMIT_CHECKED:db_column_size">30</entry>
+   <entry key="CUSTOMER_CHECKS.FRAUD_CHECKED:db_column_type">VARCHAR2</entry>
+   <entry key="CUSTOMER_CHECKS.CUSTOMER_ID:db_column_type">NUMBER</entry>
+   <entry key="CUSTOMER_CHECKS.WAITING_FOR_MANUAL_VALIDATION:db_column_not_null">false</entry>
+   <entry key="CUSTOMER_CHECKS.LIQUIDITY_CHECKED:db_column_not_null">false</entry>
+   <entry key="CUSTOMER_CHECKS.WAITING_FOR_MANUAL_VALIDATION:db_column_type">VARCHAR2</entry>
+   <entry key="CUSTOMER_CHECKS.CUSTOMER_VALIDATED:db_column_size">30</entry>
+   <entry key="CUSTOMER_CHECKS.DETOKENIZED:db_column_type">VARCHAR2</entry>
+   <entry key="CUSTOMER_CHECKS.FRAUD_CHECKED:db_column_size">30</entry>
+   <entry key="CUSTOMER_CHECKS.LIQUIDITY_CHECKED:db_column_type">VARCHAR2</entry>
+   <entry key="CUSTOMER_CHECKS.WAITING_FOR_MANUAL_VALIDATION:db_column_size">30</entry>
+   <entry key="CUSTOMER_CHECKS.FRAUD_CHECKED:db_column_not_null">false</entry>
+   <entry key="CUSTOMER_CHECKS.LOAN_AMOUNT:db_column_precision">38</entry>
+   <entry key="CUSTOMER_CHECKS.DETOKENIZED:db_column_size">30</entry>
+   <entry key="CUSTOMER_CHECKS:db_column_8">LOAN_AMOUNT</entry>
+   <entry key="CUSTOMER_CHECKS.LOAN_AMOUNT:db_column_not_null">false</entry>
+   <entry key="CUSTOMER_CHECKS:db_column_7">WAITING_FOR_MANUAL_VALIDATION</entry>
+   <entry key="CUSTOMER_CHECKS:db_column_6">LIMIT_CHECKED</entry>
+   <entry key="CUSTOMER_CHECKS:db_column_5">LIQUIDITY_CHECKED</entry>
+   <entry key="CUSTOMER_CHECKS:db_column_4">DUPLICATE_CHECKED</entry>
+   <entry key="CUSTOMER_CHECKS.CUSTOMER_ID:db_column_not_null">true</entry>
+   <entry key="CUSTOMER_CHECKS:db_column_3">CUSTOMER_VALIDATED</entry>
+   <entry key="CUSTOMER_CHECKS:db_column_2">FRAUD_CHECKED</entry>
+   <entry key="CUSTOMER_CHECKS:db_column_1">DETOKENIZED</entry>
+   <entry key="CUSTOMER_CHECKS:db_column_0">CUSTOMER_ID</entry>
+   <entry key="CUSTOMER_CHECKS.LIQUIDITY_CHECKED:db_column_size">30</entry>
+   <entry key="CUSTOMER_CHECKS.LIMIT_CHECKED:db_column_not_null">false</entry>
+   <entry key="CUSTOMER_CHECKS.DUPLICATE_CHECKED:db_column_type">VARCHAR2</entry>
+   <entry key="CUSTOMER_CHECKS.LOAN_AMOUNT:db_column_scale">0</entry>
+   <entry key="CUSTOMER_CHECKS.DUPLICATE_CHECKED:db_column_size">30</entry>
+   <entry key="CUSTOMER_CHECKS.DETOKENIZED:db_column_not_null">false</entry>
+</properties>

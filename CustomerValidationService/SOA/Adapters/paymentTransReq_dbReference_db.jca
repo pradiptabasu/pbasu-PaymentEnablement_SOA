@@ -1,0 +1,14 @@
+<adapter-config name="paymentTransReq_dbReference" adapter="db" wsdlLocation="../WSDLs/paymentTransReq_dbReference.wsdl" xmlns="http://platform.integration.oracle/blocks/adapter/fw/metadata">
+  
+  <connection-factory UIConnectionName="PaymentsEnablement_ISA-grigottbank" location="eis/DB/PaymentsEnablement_ISA-grigottbank"/>
+  <endpoint-interaction portType="paymentTransReq_dbReference_ptt" operation="insert">
+    <interaction-spec className="oracle.tip.adapter.db.DBWriteInteractionSpec">
+      <property name="DescriptorName" value="paymentTransReq_dbReference.PaymentReqTrans"/>
+      <property name="DmlType" value="insert"/>
+      <property name="MappingsMetaDataURL" value="paymentTransReq_dbReference-or-mappings.xml"/>
+      <property name="GetActiveUnitOfWork" value="false"/>
+      <property name="DetectOmissions" value="true"/>
+    </interaction-spec>
+  </endpoint-interaction>
+
+</adapter-config>

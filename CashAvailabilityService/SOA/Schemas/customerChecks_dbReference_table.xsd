@@ -1,0 +1,33 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<xs:schema targetNamespace="http://xmlns.oracle.com/pcbpel/adapter/db/top/customerChecks_dbReference" xmlns="http://xmlns.oracle.com/pcbpel/adapter/db/top/customerChecks_dbReference" elementFormDefault="qualified" attributeFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+   <xs:element name="CustomerChecksCollection" type="CustomerChecksCollection"/>
+   <xs:complexType name="CustomerChecksCollection">
+      <xs:sequence>
+         <xs:element name="CustomerChecks" type="CustomerChecks" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+   </xs:complexType>
+   <xs:complexType name="CustomerChecks">
+      <xs:sequence>
+         <xs:element name="customerId" type="xs:decimal"/>
+         <xs:element name="detokenized" type="string30" minOccurs="0" nillable="true"/>
+         <xs:element name="fraudChecked" type="string30" minOccurs="0" nillable="true"/>
+         <xs:element name="customerValidated" type="string30" minOccurs="0" nillable="true"/>
+         <xs:element name="duplicateChecked" type="string30" minOccurs="0" nillable="true"/>
+         <xs:element name="liquidityChecked" type="string30" minOccurs="0" nillable="true"/>
+         <xs:element name="limitChecked" type="string30" minOccurs="0" nillable="true"/>
+         <xs:element name="waitingForManualValidation" type="string30" minOccurs="0" nillable="true"/>
+         <xs:element name="loanAmount" type="xs:float" minOccurs="0" nillable="true"/>
+      </xs:sequence>
+   </xs:complexType>
+   <xs:element name="CustomerChecksPrimaryKey" type="CustomerChecksPrimaryKey"/>
+   <xs:complexType name="CustomerChecksPrimaryKey">
+      <xs:sequence>
+         <xs:element name="customerId" type="xs:decimal" minOccurs="1" maxOccurs="1"/>
+      </xs:sequence>
+   </xs:complexType>
+   <xs:simpleType name="string30">
+      <xs:restriction base="xs:string">
+         <xs:maxLength value="30"/>
+      </xs:restriction>
+   </xs:simpleType>
+</xs:schema>

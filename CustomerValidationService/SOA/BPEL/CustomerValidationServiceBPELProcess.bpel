@@ -1,0 +1,281 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<!--
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  Oracle JDeveloper BPEL Designer 
+  
+  Created: Mon May 16 16:54:20 IST 2016
+  Author:  pkradhak
+  Type: BPEL 2.0 Process
+  Purpose: Synchronous BPEL Process
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+-->
+<process name="CustomerValidationServiceBPELProcess"
+               targetNamespace="http://xmlns.oracle.com/PaymentEnablement_SOA/CustomerValidationService/CustomerValidationServiceBPELProcess"
+               xmlns="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
+               xmlns:client="http://xmlns.oracle.com/PaymentEnablement_SOA/CustomerValidationService/CustomerValidationServiceBPELProcess"
+               xmlns:ora="http://schemas.oracle.com/xpath/extension"
+               xmlns:ui="http://xmlns.oracle.com/soa/designer"
+               xmlns:bpelx="http://schemas.oracle.com/bpel/extension"
+         xmlns:bpel="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
+         xmlns:ns1="http://xmlns.oracle.com/pcbpel/adapter/db/PaymentEnablement_SOA/CustomerValidationService/CustomerValidationService_dbReference"
+         xmlns:ns2="http://www.bank.org/payments" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:ns3="http://xmlns.oracle.com/pcbpel/adapter/db/top/CustomerValidationService_dbReference"
+         xmlns:xp20="http://www.oracle.com/XSL/Transform/java/oracle.tip.pc.services.functions.Xpath20"
+         xmlns:bpws="http://schemas.xmlsoap.org/ws/2003/03/business-process/"
+         xmlns:oraext="http://www.oracle.com/XSL/Transform/java/oracle.tip.pc.services.functions.ExtFunc"
+         xmlns:dvm="http://www.oracle.com/XSL/Transform/java/oracle.tip.dvm.LookupValue"
+         xmlns:hwf="http://xmlns.oracle.com/bpel/workflow/xpath"
+         xmlns:ids="http://xmlns.oracle.com/bpel/services/IdentityService/xpath"
+         xmlns:bpm="http://xmlns.oracle.com/bpmn20/extensions" xmlns:ess="http://xmlns.oracle.com/scheduler"
+         xmlns:xdk="http://schemas.oracle.com/bpel/extension/xpath/function/xdk"
+         xmlns:xref="http://www.oracle.com/XSL/Transform/java/oracle.tip.xref.xpath.XRefXPathFunctions"
+         xmlns:ldap="http://schemas.oracle.com/xpath/extension/ldap"
+         xmlns:ns12="http://xmlns.oracle.com/pcbpel/adapter/db/PaymentEnablement_SOA/CustomerValidationService/customerChecks_dbReference"
+         xmlns:ns9="http://xmlns.oracle.com/pcbpel/adapter/db/top/customerChecks_dbReference"
+         xmlns:ns10="http://xmlns.oracle.com/pcbpel/adapter/db/PaymentEnablement_SOA/CustomerValidationService/paymentTransReq_dbReference"
+         xmlns:ns11="http://xmlns.oracle.com/pcbpel/adapter/db/top/paymentTransReq_dbReference"
+         xmlns:ns4="http://xmlns.oracle.com/pcbpel/adapter/db/PaymentEnablement_SOA/CustomerValidationService/CustChecks_dbReference"
+         xmlns:ns5="http://xmlns.oracle.com/pcbpel/adapter/db/top/CustChecks_dbReference"
+         xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+    <import ui:processWSDL="true" namespace="http://xmlns.oracle.com/PaymentEnablement_SOA/CustomerValidationService/CustomerValidationServiceBPELProcess" location="../WSDLs/CustomerValidationServiceBPELProcess.wsdl" importType="http://schemas.xmlsoap.org/wsdl/"/>
+    <!-- 
+      ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        PARTNERLINKS                                                      
+        List of services participating in this BPEL process               
+      ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    --> 
+  <partnerLinks>
+    <!-- 
+      The 'client' role represents the requester of this service. It is 
+      used for callback. The location and correlation information associated
+      with the client role are automatically set using WS-Addressing.
+    -->
+    <partnerLink name="customervalidationservicebpelprocess_client" partnerLinkType="client:CustomerValidationServiceBPELProcess" myRole="CustomerValidationServiceBPELProcessProvider"/>
+    <partnerLink name="customerChecks_dbReference" partnerLinkType="ns12:customerChecks_dbReference_plt"
+                 partnerRole="customerChecks_dbReference_role"/>
+    <partnerLink name="paymentTransReq_dbReference" partnerLinkType="ns10:paymentTransReq_dbReference_plt"
+                 partnerRole="paymentTransReq_dbReference_role"/>
+  </partnerLinks>
+
+  <!-- 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      VARIABLES                                                        
+      List of messages and XML documents used within this BPEL process 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  -->
+  <variables>
+    <!-- Reference to the message passed as input during initiation -->
+    <variable name="inputVariable" messageType="client:CustomerValidationServiceBPELProcessRequestMessage"/>
+
+    <!-- Reference to the message that will be returned to the requester-->
+    <variable name="outputVariable" messageType="client:CustomerValidationServiceBPELProcessResponseMessage"/>
+    <variable name="paymentReqTrans_Invoke_merge_InputVariable" messageType="ns10:PaymentReqTransCollection_msg"/>
+    <variable name="customerChecks_Invoke_selectByPrimaryKey_InputVariable"
+              messageType="ns12:selectByPrimaryKey_inputParameters"/>
+    <variable name="customerChecks_Invoke_selectByPrimaryKey_OutputVariable"
+              messageType="ns12:CustomerChecksCollection_msg"/>
+    <variable name="title" type="xsd:string"/>
+    <variable name="CustomerId" type="xsd:string"/>
+    <variable name="CustomerToken" type="xsd:string"/>
+    <variable name="CustomerValidationFaultVar" messageType="client:CustomerValidationFaultMessage"/>
+  </variables>
+
+  <!-- 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+     ORCHESTRATION LOGIC                                               
+     Set of activities coordinating the flow of messages across the    
+     services integrated within this business process                  
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  -->
+  <sequence name="main">
+
+    <!-- Receive input from requestor. (Note: This maps to operation defined in CustomerValidationServiceBPELProcess.wsdl) -->
+    <receive name="receiveInput" partnerLink="customervalidationservicebpelprocess_client" portType="client:CustomerValidationServiceBPELProcess" operation="process" variable="inputVariable" createInstance="yes"/>
+    <assign name="assignTitle">
+      <copy>
+        <from>$inputVariable.payload/ns2:FintechPaymentRequestId</from>
+        <to>$title</to>
+      </copy>
+    </assign>
+    <extensionActivity>
+      <bpelx:exec name="setCompositeTitle" language="java">
+        <![CDATA[String instanceTitle   = (String)getVariableData("title");      
+        setTitle(instanceTitle);             
+        setCompositeInstanceTitle(instanceTitle);   
+        setFlowInstanceTitle(instanceTitle);]]>
+      </bpelx:exec>
+    </extensionActivity>
+    <assign name="customerToken_Assign">
+      <copy>
+        <from>$inputVariable.payload/ns2:CustomerToken</from>
+        <to>$CustomerToken</to>
+      </copy>
+    </assign>
+    <extensionActivity>
+      <bpelx:exec name="customerToken_HextoInt" language="java">
+        <![CDATA[try                                         
+{            
+    String CustomerToken = (String)getVariableData("CustomerToken");     
+    int CustomerId = Integer.parseInt(CustomerToken, 16);      
+    setVariableData("CustomerId",CustomerId);  
+  
+}                                         
+catch(Exception e)                                         
+{                                         
+    e.printStackTrace();                                          
+}]]>
+      </bpelx:exec>
+    </extensionActivity>
+    <assign name="generate_Default_Value">
+      <bpelx:annotation>
+        <bpelx:pattern patternName="bpelx:transformation"></bpelx:pattern>
+      </bpelx:annotation>
+      <copy>
+        <from>ora:doXSLTransformForDoc("../Transformations/generate_Default_Value.xsl", $inputVariable.payload)</from>
+        <to variable="inputVariable" part="payload"/>
+      </copy>
+    </assign>
+    <assign name="customerID_Assign">
+      <copy>
+        <from>$CustomerId</from>
+        <to>$customerChecks_Invoke_selectByPrimaryKey_InputVariable.selectByPrimaryKey_inputParameters/ns9:customerId</to>
+      </copy>
+      <copy>
+        <from>$CustomerId</from>
+        <to>$title</to>
+      </copy>
+    </assign>
+    <invoke name="customerChecks_Invoke" partnerLink="customerChecks_dbReference"
+            portType="ns12:customerChecks_dbReference_ptt" operation="selectByPrimaryKey"
+            inputVariable="customerChecks_Invoke_selectByPrimaryKey_InputVariable"
+            outputVariable="customerChecks_Invoke_selectByPrimaryKey_OutputVariable" bpelx:invokeAsDetail="no"/>
+    <if name="If_detokenized">
+      <documentation>
+        <![CDATA[Yes]]>
+      </documentation>
+      <condition>oraext:compare-ignore-case($customerChecks_Invoke_selectByPrimaryKey_OutputVariable.CustomerChecksCollection/ns9:CustomerChecks/ns9:detokenized,"YES")=0</condition>
+      <if name="If_FraudChecked">
+        <documentation>
+          <![CDATA[Yes]]>
+        </documentation>
+        <condition>oraext:compare-ignore-case($customerChecks_Invoke_selectByPrimaryKey_OutputVariable.CustomerChecksCollection/ns9:CustomerChecks/ns9:fraudChecked,"YES")=0</condition>
+        <if name="If_customerValidated">
+          <documentation>
+            <![CDATA[Yes]]>
+          </documentation>
+          <condition>oraext:compare-ignore-case($customerChecks_Invoke_selectByPrimaryKey_OutputVariable.CustomerChecksCollection/ns9:CustomerChecks/ns9:customerValidated,"YES")=0</condition>
+          <sequence name="Sequence4">
+            <assign name="Assign_PaymentValidationRequest">
+              <copy>
+                <from>$inputVariable.payload/ns2:FintechPaymentRequestId</from>
+                <to>$paymentReqTrans_Invoke_merge_InputVariable.PaymentReqTransCollection/ns11:PaymentReqTrans/ns11:paymentid</to>
+              </copy>
+              <copy>
+                <from>$inputVariable.payload/ns2:FintechPaymentRequestId</from>
+                <to>$outputVariable.payload/ns2:FintechPaymentRequestId</to>
+              </copy>
+              <copy>
+                <from>'CustomerValidationDone'</from>
+                <to>$outputVariable.payload/ns2:paymentValidationStatus</to>
+              </copy>
+              <copy>
+                <from>$CustomerId</from>
+                <to>$paymentReqTrans_Invoke_merge_InputVariable.PaymentReqTransCollection/ns11:PaymentReqTrans/ns11:customerId</to>
+              </copy>
+              <copy>
+                <from>xp20:current-dateTime()</from>
+                <to>$paymentReqTrans_Invoke_merge_InputVariable.PaymentReqTransCollection/ns11:PaymentReqTrans/ns11:requesttime</to>
+              </copy>
+              <copy>
+                <from>$inputVariable.payload/ns2:finTechID</from>
+                <to>$paymentReqTrans_Invoke_merge_InputVariable.PaymentReqTransCollection/ns11:PaymentReqTrans/ns11:fintechid</to>
+              </copy>
+            </assign>
+            <invoke name="insert_PaymentValidationRequest" bpelx:invokeAsDetail="no"
+                    partnerLink="paymentTransReq_dbReference" portType="ns10:paymentTransReq_dbReference_ptt"
+                    operation="insert" inputVariable="paymentReqTrans_Invoke_merge_InputVariable"/>
+          </sequence>
+          <else>
+            <documentation>
+              <![CDATA[No]]>
+            </documentation>
+            <sequence name="Sequence3">
+              <assign name="notvalid_Assign">
+                <copy>
+                  <from>400</from>
+                  <to>$CustomerValidationFaultVar.payload/ns2:code</to>
+                </copy>
+                <copy>
+                  <from>concat('PaymentRequest #',$inputVariable.payload/ns2:FintechPaymentRequestId,' Customer is invalid')</from>
+                  <to>$CustomerValidationFaultVar.payload/ns2:summary</to>
+                </copy>
+                <copy>
+                  <from>concat('PaymentRequest #',$inputVariable.payload/ns2:FintechPaymentRequestId,' Customer is invalid')</from>
+                  <to>$CustomerValidationFaultVar.payload/ns2:detail</to>
+                </copy>
+              </assign>
+              <throw name="Throw_InvalidCustomer" faultName="client:CustomerValidationFault"
+                     faultVariable="CustomerValidationFaultVar"/>
+            </sequence>
+          </else>
+        </if>
+        <else>
+          <documentation>
+            <![CDATA[No]]>
+          </documentation>
+          <sequence name="Sequence2">
+            <assign name="fraud_Assign">
+              <copy>
+                  <from>400</from>
+                  <to>$CustomerValidationFaultVar.payload/ns2:code</to>
+                </copy>
+                <copy>
+                  <from>concat('PaymentRequest #',$inputVariable.payload/ns2:FintechPaymentRequestId,' Customer is FRAUD')</from>
+                  <to>$CustomerValidationFaultVar.payload/ns2:summary</to>
+                </copy>
+                <copy>
+                  <from>concat('PaymentRequest #',$inputVariable.payload/ns2:FintechPaymentRequestId,' Customer is FRAUD')</from>
+                  <to>$CustomerValidationFaultVar.payload/ns2:detail</to>
+                </copy>
+            </assign>
+            <throw name="Throw_CustomerFraud" faultName="client:CustomerValidationFault"
+                   faultVariable="CustomerValidationFaultVar"/>
+          </sequence>
+        </else>
+      </if>
+      <else>
+        <documentation>
+          <![CDATA[No]]>
+        </documentation>
+        <sequence name="Sequence1">
+          <assign name="notDetokenized_Assign">
+            <copy>
+                  <from>400</from>
+                  <to>$CustomerValidationFaultVar.payload/ns2:code</to>
+                </copy>
+                <copy>
+                  <from>concat('PaymentRequest #',$inputVariable.payload/ns2:FintechPaymentRequestId,' Detokenization Failed')</from>
+                  <to>$CustomerValidationFaultVar.payload/ns2:summary</to>
+                </copy>
+                <copy>
+                  <from>concat('PaymentRequest #',$inputVariable.payload/ns2:FintechPaymentRequestId,' Detokenization Failed')</from>
+                  <to>$CustomerValidationFaultVar.payload/ns2:detail</to>
+                </copy>
+          </assign>
+          <throw name="Throw_NotDetokenized" faultName="client:CustomerValidationFault"
+                 faultVariable="CustomerValidationFaultVar"/>
+        </sequence>
+      </else>
+    </if>
+    <!-- Generate reply to synchronous request -->
+    <reply name="replyOutput" partnerLink="customervalidationservicebpelprocess_client" portType="client:CustomerValidationServiceBPELProcess" operation="process" variable="outputVariable">
+      <bpelx:toProperties>
+        <bpelx:toProperty name="rest.binding.http.Access-Control-Allow-Origin">'*'</bpelx:toProperty>
+        <bpelx:toProperty name="rest.binding.http.Access-Control-Allow-Credentials">'false'</bpelx:toProperty>
+        <bpelx:toProperty name="rest.binding.http.Access-Control-Allow-Methods">'GET, POST, OPTIONS'</bpelx:toProperty>
+        <bpelx:toProperty name="rest.binding.http.Access-Control-Allow-Headers">'Content-Type'</bpelx:toProperty>
+      </bpelx:toProperties>
+    </reply>      
+  </sequence>
+</process>

@@ -1,0 +1,28 @@
+<wsdl:definitions
+     name="UpdatePaymentStatus"
+     targetNamespace="http://xmlns.oracle.com/pcbpel/adapter/db/PaymentEnablement_SOA/CreditAvailabilityService/UpdatePaymentStatus"
+     xmlns:tns="http://xmlns.oracle.com/pcbpel/adapter/db/PaymentEnablement_SOA/CreditAvailabilityService/UpdatePaymentStatus"
+     xmlns:jca="http://xmlns.oracle.com/pcbpel/wsdl/jca/"
+     xmlns:plt="http://schemas.xmlsoap.org/ws/2003/05/partner-link/"
+     xmlns:top="http://xmlns.oracle.com/pcbpel/adapter/db/top/UpdatePaymentStatus"
+     xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+    >
+  <plt:partnerLinkType name="UpdatePaymentStatus_plt" >
+    <plt:role name="UpdatePaymentStatus_role" >
+      <plt:portType name="tns:UpdatePaymentStatus_ptt" />
+    </plt:role>
+  </plt:partnerLinkType>
+    <wsdl:types>
+      <schema xmlns="http://www.w3.org/2001/XMLSchema" >
+        <import namespace="http://xmlns.oracle.com/pcbpel/adapter/db/top/UpdatePaymentStatus" schemaLocation="../Schemas/UpdatePaymentStatus_table.xsd" />
+      </schema>
+    </wsdl:types>
+    <wsdl:message name="PaymentReqTransCollection_msg">
+        <wsdl:part name="PaymentReqTransCollection" element="top:PaymentReqTransCollection"/>
+    </wsdl:message>
+    <wsdl:portType name="UpdatePaymentStatus_ptt">
+        <wsdl:operation name="update">
+            <wsdl:input message="tns:PaymentReqTransCollection_msg"/>
+        </wsdl:operation>
+    </wsdl:portType>
+</wsdl:definitions>

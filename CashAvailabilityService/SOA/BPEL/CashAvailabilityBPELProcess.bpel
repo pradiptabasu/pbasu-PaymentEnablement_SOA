@@ -1,0 +1,251 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<!--
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  Oracle JDeveloper BPEL Designer 
+  
+  Created: Mon May 16 18:06:40 IST 2016
+  Author:  pkradhak
+  Type: BPEL 2.0 Process
+  Purpose: Synchronous BPEL Process
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+-->
+<process name="CashAvailabilityBPELProcess"
+               targetNamespace="http://xmlns.oracle.com/PaymentEnablement_SOA/CashAvailabilityService/CashAvailabilityBPELProcess"
+               xmlns="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
+               xmlns:client="http://xmlns.oracle.com/PaymentEnablement_SOA/CashAvailabilityService/CashAvailabilityBPELProcess"
+               xmlns:ora="http://schemas.oracle.com/xpath/extension"
+               xmlns:ui="http://xmlns.oracle.com/soa/designer"
+               xmlns:bpelx="http://schemas.oracle.com/bpel/extension"
+         xmlns:bpel="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
+         xmlns:ns1="http://xmlns.oracle.com/pcbpel/adapter/db/PaymentEnablement_SOA/CashAvailabilityService/CashAvailability_dbReference"
+         xmlns:ns2="http://xmlns.oracle.com/pcbpel/adapter/db/PaymentEnablement_SOA/CashAvailabilityService/PaymentReqTrans_dbReference"
+         xmlns:ns3="http://xmlns.oracle.com/pcbpel/adapter/db/PaymentEnablement_SOA/CashAvailabilityService/customerChecks_dbReference"
+         xmlns:ns4="http://xmlns.oracle.com/pcbpel/adapter/db/PaymentEnablement_SOA/CashAvailabilityService/paymentsReqTrans_dbReference"
+         xmlns:ns5="http://www.bank.org/payments"
+         xmlns:ns6="http://xmlns.oracle.com/pcbpel/adapter/db/top/customerChecks_dbReference"
+         xmlns:xp20="http://www.oracle.com/XSL/Transform/java/oracle.tip.pc.services.functions.Xpath20"
+         xmlns:bpws="http://schemas.xmlsoap.org/ws/2003/03/business-process/"
+         xmlns:oraext="http://www.oracle.com/XSL/Transform/java/oracle.tip.pc.services.functions.ExtFunc"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:dvm="http://www.oracle.com/XSL/Transform/java/oracle.tip.dvm.LookupValue"
+         xmlns:hwf="http://xmlns.oracle.com/bpel/workflow/xpath"
+         xmlns:ids="http://xmlns.oracle.com/bpel/services/IdentityService/xpath"
+         xmlns:bpm="http://xmlns.oracle.com/bpmn20/extensions" xmlns:ess="http://xmlns.oracle.com/scheduler"
+         xmlns:xdk="http://schemas.oracle.com/bpel/extension/xpath/function/xdk"
+         xmlns:xref="http://www.oracle.com/XSL/Transform/java/oracle.tip.xref.xpath.XRefXPathFunctions"
+         xmlns:ldap="http://schemas.oracle.com/xpath/extension/ldap"
+         xmlns:ns7="http://xmlns.oracle.com/pcbpel/adapter/db/top/paymentsReqTrans_dbReference"
+         xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+    <import ui:processWSDL="true" namespace="http://xmlns.oracle.com/PaymentEnablement_SOA/CashAvailabilityService/CashAvailabilityBPELProcess" location="../WSDLs/CashAvailabilityBPELProcess.wsdl" importType="http://schemas.xmlsoap.org/wsdl/"/>
+    <!-- 
+      ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        PARTNERLINKS                                                      
+        List of services participating in this BPEL process               
+      ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    --> 
+  <partnerLinks>
+    <!-- 
+      The 'client' role represents the requester of this service. It is 
+      used for callback. The location and correlation information associated
+      with the client role are automatically set using WS-Addressing.
+    -->
+    <partnerLink name="cashavailabilitybpelprocess_client" partnerLinkType="client:CashAvailabilityBPELProcess" myRole="CashAvailabilityBPELProcessProvider"/>
+    <partnerLink name="customerChecks_dbReference" partnerLinkType="ns3:customerChecks_dbReference_plt"
+                 partnerRole="customerChecks_dbReference_role"/>
+    <partnerLink name="paymentsReqTrans_dbReference" partnerLinkType="ns4:paymentsReqTrans_dbReference_plt"
+                 partnerRole="paymentsReqTrans_dbReference_role"/>
+  </partnerLinks>
+
+  <!-- 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      VARIABLES                                                        
+      List of messages and XML documents used within this BPEL process 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  -->
+  <variables>
+    <!-- Reference to the message passed as input during initiation -->
+    <variable name="inputVariable" messageType="client:CashAvailabilityBPELProcessRequestMessage"/>
+
+    <!-- Reference to the message that will be returned to the requester-->
+    <variable name="outputVariable" messageType="client:CashAvailabilityBPELProcessResponseMessage"/>
+    
+    <variable name="customerChecks_Invoke_selectByPrimaryKey_InputVariable"
+              messageType="ns3:selectByPrimaryKey_inputParameters"/>
+    <variable name="customerChecks_Invoke_selectByPrimaryKey_OutputVariable"
+              messageType="ns3:CustomerChecksCollection_msg"/>
+    <variable name="fundsAvailable_Invoke_insert_InputVariable" messageType="ns4:PaymentReqTransCollection_msg"/>
+    <variable name="CustomerToken" type="xsd:string"/>
+    <variable name="CustomerId" type="xsd:string"/>
+    <variable name="title" type="xsd:string"/>
+  </variables>
+
+  <!-- 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+     ORCHESTRATION LOGIC                                               
+     Set of activities coordinating the flow of messages across the    
+     services integrated within this business process                  
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  -->
+  <sequence name="main">
+
+    <!-- Receive input from requestor. (Note: This maps to operation defined in CashAvailabilityBPELProcess.wsdl) -->
+    <receive name="receiveInput" partnerLink="cashavailabilitybpelprocess_client" portType="client:CashAvailabilityBPELProcess" operation="process" variable="inputVariable" createInstance="yes"/>
+    <assign name="AssignTitle">
+      <copy>
+        <from>$inputVariable.payload/ns5:FintechPaymentRequestId</from>
+        <to>$title</to>
+      </copy>
+    </assign>
+    <extensionActivity>
+      <bpelx:exec name="setCompositeTitle" language="java">
+        <![CDATA[String instanceTitle   = (String)getVariableData("title");       
+        setTitle(instanceTitle);              
+        setCompositeInstanceTitle(instanceTitle);    
+        setFlowInstanceTitle(instanceTitle);]]>
+      </bpelx:exec>
+    </extensionActivity>
+    <assign name="customerToken_Assign">
+      <copy>
+        <from>$inputVariable.payload/ns5:CustomerToken</from>
+        <to>$CustomerToken</to>
+      </copy>
+    </assign>
+    <extensionActivity>
+      <bpelx:exec name="customerToken_HextoInt" language="java">
+        <![CDATA[try                                          
+{             
+    String CustomerToken = (String)getVariableData("CustomerToken");      
+    int CustomerId = Integer.parseInt(CustomerToken, 16);       
+    setVariableData("CustomerId",CustomerId);   
+   
+}                                          
+catch(Exception e)                                          
+{                                          
+    e.printStackTrace();                                           
+}]]>
+      </bpelx:exec>
+    </extensionActivity>
+    <assign name="generate_Default_Value">
+      <bpelx:annotation>
+        <bpelx:pattern patternName="bpelx:transformation"></bpelx:pattern>
+      </bpelx:annotation>
+      <copy>
+        <from>ora:doXSLTransformForDoc("../Transformations/generate_Default_Value.xsl", $inputVariable.payload)</from>
+        <to variable="inputVariable" part="payload"/>
+      </copy>
+    </assign>
+    <assign name="customerID_Assign">
+      <copy>
+        <from>$CustomerId</from>
+        <to>$customerChecks_Invoke_selectByPrimaryKey_InputVariable.selectByPrimaryKey_inputParameters/ns6:customerId</to>
+      </copy>
+      <copy>
+        <from>$CustomerId</from>
+        <to>$title</to>
+      </copy>
+    </assign>
+    <invoke name="customerChecks_Invoke" partnerLink="customerChecks_dbReference"
+            portType="ns3:customerChecks_dbReference_ptt" operation="selectByPrimaryKey"
+            inputVariable="customerChecks_Invoke_selectByPrimaryKey_InputVariable"
+            outputVariable="customerChecks_Invoke_selectByPrimaryKey_OutputVariable" bpelx:invokeAsDetail="no"/>
+    <if name="If_fundsAvailable">
+      <documentation>
+        <![CDATA[Yes]]>
+      </documentation>
+      <condition>number($inputVariable.payload/ns5:RequiredFunds) &lt;=  number($customerChecks_Invoke_selectByPrimaryKey_OutputVariable.CustomerChecksCollection/ns6:CustomerChecks/ns6:loanAmount)</condition>
+      <sequence name="Sequence3">
+        <assign name="fundsAvailable_Assign">
+          <copy>
+            <from>$inputVariable.payload/ns5:FintechPaymentRequestId</from>
+            <to>$fundsAvailable_Invoke_insert_InputVariable.PaymentReqTransCollection/ns7:PaymentReqTrans/ns7:paymentid</to>
+          </copy>
+          <copy>
+            <from>number(0)</from>
+            <to>$fundsAvailable_Invoke_insert_InputVariable.PaymentReqTransCollection/ns7:PaymentReqTrans/ns7:loanamount</to>
+          </copy>
+          <copy>
+            <from>"VALID"</from>
+            <to>$fundsAvailable_Invoke_insert_InputVariable.PaymentReqTransCollection/ns7:PaymentReqTrans/ns7:status</to>
+          </copy>
+          <copy>
+            <from>$inputVariable.payload/ns5:FintechPaymentRequestId</from>
+            <to>$outputVariable.payload/ns5:FintechPaymentRequestId</to>
+          </copy>
+          <copy>
+            <from>number($inputVariable.payload/ns5:RequiredFunds)</from>
+            <to>$fundsAvailable_Invoke_insert_InputVariable.PaymentReqTransCollection/ns7:PaymentReqTrans/ns7:customerasset</to>
+          </copy>
+          <copy>
+            <from>"Y"</from>
+            <to>$outputVariable.payload/ns5:fundsAvailable</to>
+          </copy>
+          <copy>
+            <from>$customerChecks_Invoke_selectByPrimaryKey_OutputVariable.CustomerChecksCollection/ns6:CustomerChecks/ns6:loanAmount</from>
+            <to>$outputVariable.payload/ns5:cashAmount</to>
+          </copy>
+          <copy>
+            <from>'Approved based on Customer Asset'</from>
+            <to>$outputVariable.payload/ns5:paymentValidationStatus</to>
+          </copy>
+          <copy>
+            <from>"0"</from>
+            <to>$outputVariable.payload/ns5:creditAmount</to>
+          </copy>
+        </assign>
+        <invoke name="fundsAvailable_Invoke" partnerLink="paymentsReqTrans_dbReference"
+                portType="ns4:paymentsReqTrans_dbReference_ptt" operation="update"
+                inputVariable="fundsAvailable_Invoke_insert_InputVariable" bpelx:invokeAsDetail="no"/>
+      </sequence>
+      <else>
+        <documentation>
+          <![CDATA[No]]>
+        </documentation>
+        <sequence name="Sequence4">
+          <assign name="creditNeeded_Assign">
+            <copy>
+              <from>$inputVariable.payload/ns5:FintechPaymentRequestId</from>
+              <to>$fundsAvailable_Invoke_insert_InputVariable.PaymentReqTransCollection/ns7:PaymentReqTrans/ns7:paymentid</to>
+            </copy>
+            <copy>
+              <from>($inputVariable.payload/ns5:RequiredFunds)-($customerChecks_Invoke_selectByPrimaryKey_OutputVariable.CustomerChecksCollection/ns6:CustomerChecks/ns6:loanAmount)</from>
+              <to>$fundsAvailable_Invoke_insert_InputVariable.PaymentReqTransCollection/ns7:PaymentReqTrans/ns7:loanamount</to>
+            </copy>
+            <copy>
+              <from>$customerChecks_Invoke_selectByPrimaryKey_OutputVariable.CustomerChecksCollection/ns6:CustomerChecks/ns6:loanAmount</from>
+              <to>$fundsAvailable_Invoke_insert_InputVariable.PaymentReqTransCollection/ns7:PaymentReqTrans/ns7:customerasset</to>
+            </copy>
+            <copy>
+              <from>$inputVariable.payload/ns5:FintechPaymentRequestId</from>
+              <to>$outputVariable.payload/ns5:FintechPaymentRequestId</to>
+            </copy>
+            <copy>
+              <from>"Limit Check Failed"</from>
+              <to>$outputVariable.payload/ns5:paymentValidationStatus</to>
+            </copy>
+            <copy>
+              <from>$customerChecks_Invoke_selectByPrimaryKey_OutputVariable.CustomerChecksCollection/ns6:CustomerChecks/ns6:loanAmount</from>
+              <to>$outputVariable.payload/ns5:cashAmount</to>
+            </copy>
+            <copy>
+              <from>($inputVariable.payload/ns5:RequiredFunds) - ($customerChecks_Invoke_selectByPrimaryKey_OutputVariable.CustomerChecksCollection/ns6:CustomerChecks/ns6:loanAmount)</from>
+              <to>$outputVariable.payload/ns5:creditAmount</to>
+            </copy>
+          </assign>
+          <invoke name="invokeCreditNeeded" bpelx:invokeAsDetail="no" partnerLink="paymentsReqTrans_dbReference"
+                  portType="ns4:paymentsReqTrans_dbReference_ptt" operation="update"
+                  inputVariable="fundsAvailable_Invoke_insert_InputVariable"/>
+        </sequence>
+      </else>
+    </if>
+    <!-- Generate reply to synchronous request -->
+    <reply name="replyOutput" partnerLink="cashavailabilitybpelprocess_client" portType="client:CashAvailabilityBPELProcess" operation="process" variable="outputVariable">
+      <bpelx:toProperties>
+        <bpelx:toProperty name="rest.binding.http.Access-Control-Allow-Origin">'*'</bpelx:toProperty>
+        <bpelx:toProperty name="rest.binding.http.Access-Control-Allow-Credentials">'false'</bpelx:toProperty>
+        <bpelx:toProperty name="rest.binding.http.Access-Control-Allow-Methods">'GET, POST, OPTIONS'</bpelx:toProperty>
+        <bpelx:toProperty name="rest.binding.http.Access-Control-Allow-Headers">'Content-Type'</bpelx:toProperty>
+      </bpelx:toProperties>
+    </reply>
+  </sequence>
+</process>
